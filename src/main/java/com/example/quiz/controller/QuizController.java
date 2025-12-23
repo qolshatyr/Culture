@@ -2,7 +2,7 @@ package com.example.quiz.controller;
 
 import com.example.quiz.dto.ScoreEntry;
 import com.example.quiz.entity.Question;
-import com.example.quiz.repository.QuestionRepository;
+import com.example.quiz.repository.ScoreRepository;
 import com.example.quiz.service.LeaderboardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor // Lombok создаст конструктор для final полей
 public class QuizController {
 
-    private final QuestionRepository repository;
+    private final ScoreRepository repository;
     private final LeaderboardService leaderboardService; // Подключаем сервис
     private final ObjectMapper objectMapper = new ObjectMapper();
 
