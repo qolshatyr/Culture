@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Flashcards</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        .scene { width: 90%; max-width: 600px; height: 400px; perspective: 1000px; cursor: pointer; }
+        .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border-radius: 30px; }
+        .scene.flipped .card-inner { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 30px; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: white; color: #333; }
+        .card-face.back { background: #2d3748; color: white; transform: rotateY(180deg); }
+        .btn-ctrl { background: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: #0052d4; transition: 0.2s; }
+        .btn-ctrl:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+<a href="/" class="btn btn-light rounded-pill fw-bold shadow position-absolute top-0 start-0 m-4">← Menu</a>
+
+<div class="scene" onclick="this.classList.toggle('flipped')">
+    <div class="card-inner">
+        <div class="card-face front">
+            <span class="badge bg-primary mb-3" id="topic">Topic</span>
+            <h3 class="fw-bold" id="qText">Loading...</h3>
+            <div class="text-muted small mt-4">Tap to flip ↻</div>
+        </div>
+        <div class="card-face back">
+            <div style="font-size: 3rem;">💡</div>
+            <h2 class="fw-bold text-success mb-3" id="ansKey">A</h2>
+            <div id="ansText" class="opacity-75">Answer text</div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 fw-bold text-white">Card <span id="idx">1</span> / <span id="total">0</span></div>
+<div class="d-flex gap-3 mt-4">
+    <button class="btn-ctrl" onclick="nav(-1)">← Prev</button>
+    <button class="btn-ctrl" onclick="nav(1)">Next →</button>
+</div>
+
+<script th:inline="javascript">
+    const qs = [[${questions}]]; let i = 0;
+    function render() {
+        const q = qs[i];
+        document.getElementById('qText').innerText = q.questionText;
+        document.getElementById('topic').innerText = q.topic || 'General';
+        document.getElementById('ansKey').innerText = "Option " + q.correctAnswer;
+
+        let txt = "";
+        if(q.correctAnswer==='A') txt=q.optionA; if(q.correctAnswer==='B') txt=q.optionB;
+        if(q.correctAnswer==='C') txt=q.optionC; if(q.correctAnswer==='D') txt=q.optionD; if(q.correctAnswer==='E') txt=q.optionE;
+        document.getElementById('ansText').innerText = txt;
+
+        document.getElementById('idx').innerText = i+1; document.getElementById('total').innerText = qs.length;
+        document.querySelector('.scene').classList.remove('flipped');
+    }
+    function nav(d) { i+=d; if(i<0)i=qs.length-1; if(i>=qs.length)i=0; render(); }
+    document.addEventListener('keydown', e => { if(e.code==='Space')document.querySelector('.scene').classList.toggle('flipped'); if(e.code==='ArrowRight')nav(1); if(e.code==='ArrowLeft')nav(-1); });
+    render();
+</script>
+</body>
+</html>
