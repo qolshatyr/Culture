@@ -25,8 +25,19 @@ body.dark-mode {
     padding: 2.5rem; margin-bottom: 1.5rem; text-align: center;
     box-shadow: var(--card-shadow);
 }
-.fade-enter { opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-.fade-enter-active { opacity: 1; transform: translateY(0); }
+/* Исправленная анимация */
+.fade-enter {
+    opacity: 0;
+    transform: translateY(20px);
+    /* Убрали transition отсюда! Теперь скрытие будет мгновенным. */
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    /* Transition работает только при появлении */
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
 
 .option-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 @media (min-width: 768px) { .option-grid { grid-template-columns: 1fr 1fr; } }
@@ -56,3 +67,17 @@ body.dark-mode {
 
 .control-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
 .control-btn:hover { color: var(--primary); transform: scale(1.1); }
+
+/* Стили для рейтинга звездами */
+#starRating span {
+    color: var(--btn-border); /* Серый цвет неактивной звезды */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+    transform: scale(1);
+}
+
+#starRating span.active {
+    color: #F59E0B; /* Золотой цвет */
+    transform: scale(1.3);
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+}

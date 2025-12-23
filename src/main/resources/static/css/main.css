@@ -69,3 +69,21 @@ body {
     cursor: pointer;
 }
 .btn-modern:hover { transform: translateY(-2px); border-color: var(--primary); color: var(--primary); }
+
+/* ... (код который там уже был) ... */
+
+/* Стиль для активной (закрашенной) кнопки */
+.btn-primary-modern {
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+.btn-primary-modern:hover {
+    background: var(--primary-hover);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.btn-primary-modern:active {
+    transform: translateY(0);
+}

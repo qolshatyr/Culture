@@ -51,24 +51,42 @@ document.addEventListener('keydown', e => {
 });
 
 function render() {
+    // Если вопросы кончились — завершаем игру
     if (idx >= questions.length) return finish();
+
     const qCard = document.querySelector('.question-card');
     const opts = document.getElementById('optionsArea');
+
+    // --- 1. СБРОС АНИМАЦИИ (Мгновенное скрытие) ---
     qCard.classList.remove('fade-enter-active');
     qCard.classList.add('fade-enter');
     opts.style.opacity = '0';
+
+    // --- 2. FORCE REFLOW (Магия) ---
+    // Чтение свойства offsetWidth заставляет браузер немедленно применить
+    // классы выше (скрыть элемент), не дожидаясь конца скрипта.
+    void qCard.offsetWidth;
+
     setTimeout(() => {
         const q = questions[idx];
         locked = false;
+
+        // Обновляем тексты и прогресс-бар
         document.getElementById('currentNum').innerText = idx + 1;
         document.getElementById('questionText').innerText = q.questionText;
         document.getElementById('progressBar').style.width = ((idx) / questions.length) * 100 + '%';
+
         opts.innerHTML = '';
+
+        // Собираем варианты ответов
         let variants = [
             {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
         ].filter(v => v.t && v.t.trim());
+
         shuffle(variants);
         const labels = ['A','B','C','D','E'];
+
+        // Создаем кнопки
         variants.forEach((v, i) => {
             const btn = document.createElement('div');
             btn.className = 'option-btn';
@@ -81,6 +99,8 @@ function render() {
             btn.dataset.k = v.k;
             opts.appendChild(btn);
         });
+
+        // --- 3. ЗАПУСК ПЛАВНОГО ПОЯВЛЕНИЯ ---
         requestAnimationFrame(() => {
             qCard.classList.add('fade-enter-active');
             opts.style.opacity = '1';
@@ -93,18 +113,37 @@ function check(btn, k, corr) {
     locked = true;
     const cleanK = k ? k.trim().toUpperCase() : "";
     const cleanCorr = corr ? corr.trim().toUpperCase() : "";
+
     if (cleanK === cleanCorr) {
+        // Правильный ответ
         btn.classList.add('btn-correct');
         score++; streak++;
-        if (streak > 1) { document.getElementById('streakBox').style.display = 'flex'; document.getElementById('streakVal').innerText = "x" + streak; }
+        if (streak > 1) {
+            document.getElementById('streakBox').style.display = 'flex';
+            document.getElementById('streakVal').innerText = "x" + streak;
+        }
         play('c');
     } else {
+        // Неправильный ответ
         btn.classList.add('btn-wrong');
-        document.querySelector('.question-card').classList.add('shake');
+
+        const qCard = document.querySelector('.question-card');
+        // 1. Сброс анимации (на всякий случай)
+        qCard.classList.remove('shake');
+        void qCard.offsetWidth; // Force Reflow
+        // 2. Запуск анимации
+        qCard.classList.add('shake');
+
+        // 3. Удаление класса после завершения (чтобы сработало в следующий раз)
+        setTimeout(() => {
+            qCard.classList.remove('shake');
+        }, 500);
+
         document.querySelectorAll('.option-btn').forEach(b => {
             if (b.dataset.k === cleanCorr) b.classList.add('btn-correct');
         });
-        streak = 0; document.getElementById('streakBox').style.display = 'none';
+        streak = 0;
+        document.getElementById('streakBox').style.display = 'none';
         play('w');
     }
     document.getElementById('scoreVal').innerText = score;
@@ -116,8 +155,37 @@ function finish() {
     document.getElementById('gameArea').style.display = 'none';
     document.getElementById('inputNameArea').style.display = 'block';
     document.getElementById('progressBar').style.width = '100%';
+
+    // 1. Показываем очки
     document.getElementById('finalScore').innerText = score + " / " + questions.length;
-    if ((score / questions.length) >= 0.5) { play('f'); confetti({particleCount:150, spread:70, origin:{y:0.6}}); }
+
+    // 2. Считаем и показываем проценты
+    const percentage = Math.round((score / questions.length) * 100);
+    document.getElementById('accuracyVal').innerText = percentage + "%";
+
+    // 3. Логика звезд (с анимацией)
+    const stars = document.querySelectorAll('#starRating span');
+
+    // Звезда 1: Если > 0%
+    if (percentage > 0) {
+        setTimeout(() => stars[0].classList.add('active'), 250);
+    }
+    // Звезда 2: Если >= 50%
+    if (percentage >= 50) {
+        setTimeout(() => stars[1].classList.add('active'), 650);
+    }
+    // Звезда 3: Если >= 80%
+    if (percentage >= 80) {
+        setTimeout(() => stars[2].classList.add('active'), 1050);
+    }
+
+    // Победный звук и конфетти (только если набрал 50%+)
+    if (percentage >= 50) {
+        setTimeout(() => {
+            play('f');
+            confetti({particleCount:150, spread:70, origin:{y:0.6}});
+        }, 650); // Синхронизируем со второй звездой
+    }
 }
 
 function submitScore() {

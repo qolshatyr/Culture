@@ -43,10 +43,20 @@
 
     <div id="inputNameArea" class="text-center fade-in" style="display: none; margin-top: 2rem;">
         <h2 class="fw-bold mb-2">Quiz Completed!</h2>
-        <p class="fs-5 mb-4">Score: <span id="finalScore" class="fw-bold text-primary"></span></p>
+
+        <div id="starRating" class="fs-1 mb-2" style="letter-spacing: 10px;">
+            <span>★</span><span>★</span><span>★</span>
+        </div>
+
+        <p class="fs-5 mb-4">
+            Score: <span id="finalScore" class="fw-bold text-primary"></span>
+            <span class="text-muted mx-2">|</span>
+            Accuracy: <span id="accuracyVal" class="fw-bold">0%</span>
+        </p>
+
         <div class="card p-4 border-0 shadow-lg rounded-4 mx-auto" style="max-width: 400px; background: var(--card-bg);">
             <input type="text" id="username" class="form-control mb-3" placeholder="Enter Name" maxlength="15">
-            <button type="button" id="saveBtn" onclick="submitScore()" class="btn btn-primary w-100 py-2">Save Result</button>
+            <button type="button" id="saveBtn" onclick="submitScore()" class="btn-modern btn-primary-modern w-100 py-2">Save Result</button>
         </div>
     </div>
 </div>
