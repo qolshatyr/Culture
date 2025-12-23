@@ -217,22 +217,21 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // --- 2. ИНИЦИАЛИЗАЦИЯ ИГРЫ (С ЗАЩИТОЙ ОТ ОШИБОК) ---
+    // --- 2. ИНИЦИАЛИЗАЦИЯ ИГРЫ ---
     let questions = [];
     try {
-        // Thymeleaf безопасно вставит JSON строку
         const rawJson = [[${questionsJson}]];
         questions = JSON.parse(rawJson);
     } catch (e) {
-        console.error("CRITICAL ERROR: Could not parse questions JSON!", e);
-        alert("Ошибка загрузки вопросов. Проверьте консоль браузера.");
+        console.error("Error parsing JSON", e);
     }
 
     let idx = 0, score = 0, locked = false, seconds = 0, timerInt;
     let streak = 0;
 
-    // Ссылка на API (генерируется Thymeleaf для поддержки контекста)
+    // ПОЛУЧАЕМ URL И КАТЕГОРИЮ ИЗ КОНТРОЛЛЕРА
     const submitUrl = [[@{/api/submit-score}]];
+    const categoryId = [[${categoryId}]]; // "1", "2" или "ALL"
 
     if (questions && questions.length > 0) {
         document.getElementById('totalNum').innerText = questions.length;
@@ -247,7 +246,6 @@
         document.getElementById('questionText').innerText = "No questions found!";
     }
 
-    // Перемешивание массива
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -255,7 +253,6 @@
         }
     }
 
-    // Клавиатура
     document.addEventListener('keydown', e => {
         if (!locked && ['1','2','3','4','5'].includes(e.key)) {
             const btns = document.querySelectorAll('.option-btn');
@@ -263,7 +260,7 @@
         }
     });
 
-    // --- 3. ОТРИСОВКА ВОПРОСА ---
+    // --- 3. ОТРИСОВКА ---
     function render() {
         if (idx >= questions.length) return finish();
 
@@ -284,13 +281,11 @@
 
             opts.innerHTML = '';
 
-            // Собираем варианты и перемешиваем
             let variants = [
                 {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
             ].filter(v => v.t && v.t.trim());
 
             shuffle(variants);
-
             const labels = ['A','B','C','D','E'];
 
             variants.forEach((v, i) => {
@@ -299,22 +294,20 @@
                 btn.innerHTML = `
                         <div class="option-key">${labels[i]}</div>
                         <span class="flex-grow-1">${v.t}</span>
-                        <span class="key-hint">Key ${i+1}</span>
                     `;
                 btn.onclick = () => check(btn, v.k, q.correctAnswer);
-                btn.dataset.k = v.k; // Храним оригинальную букву для проверки
+                btn.dataset.k = v.k;
                 opts.appendChild(btn);
             });
 
             requestAnimationFrame(() => {
                 qCard.classList.add('fade-enter-active');
-                opts.style.transition = 'opacity 0.4s ease 0.1s';
                 opts.style.opacity = '1';
             });
         }, 50);
     }
 
-    // --- 4. ПРОВЕРКА ОТВЕТА ---
+    // --- 4. ПРОВЕРКА ---
     function check(btn, k, corr) {
         if (locked) return;
         locked = true;
@@ -323,20 +316,18 @@
 
         if (cleanK === cleanCorr) {
             btn.classList.add('btn-correct');
-            btn.innerHTML += ` <span style="position: absolute; right: 20px;">✅</span>`;
+            btn.innerHTML += ` <span style="float:right;">✅</span>`;
             score++; streak++;
             updateStreakUI();
             play('c');
         } else {
             btn.classList.add('btn-wrong');
-            btn.innerHTML += ` <span style="position: absolute; right: 20px;">❌</span>`;
+            btn.innerHTML += ` <span style="float:right;">❌</span>`;
             document.querySelector('.question-card').classList.add('shake');
-
-            // Подсветка правильного
             document.querySelectorAll('.option-btn').forEach(b => {
                 if (b.dataset.k === cleanCorr) {
                     b.classList.add('btn-correct');
-                    if(!b.innerHTML.includes('✅')) b.innerHTML += ` <span style="position: absolute; right: 20px;">✅</span>`;
+                    if(!b.innerHTML.includes('✅')) b.innerHTML += ` <span style="float:right;">✅</span>`;
                 }
             });
             streak = 0; updateStreakUI();
@@ -352,8 +343,6 @@
         val.innerText = "x" + streak;
         if (streak > 1) {
             box.style.display = 'flex';
-            box.classList.remove('pop-in'); void box.offsetWidth; box.classList.add('pop-in');
-            val.style.color = (streak >= 5) ? '#EF4444' : '#F59E0B';
         } else {
             box.style.display = 'none';
         }
@@ -366,10 +355,8 @@
         document.getElementById('progressBar').style.width = '100%';
         document.getElementById('finalScore').innerText = score + " / " + questions.length;
 
-        // Звезды
         const percentage = (score / questions.length) * 100;
         const stars = document.querySelectorAll('#starRating span');
-        stars.forEach(s => s.classList.remove('active'));
         if (percentage > 0) setTimeout(() => stars[0].classList.add('active'), 200);
         if (percentage >= 50) setTimeout(() => stars[1].classList.add('active'), 600);
         if (percentage >= 80) setTimeout(() => stars[2].classList.add('active'), 1000);
@@ -380,14 +367,13 @@
         }
     }
 
-    // --- 5. ОТПРАВКА РЕЗУЛЬТАТА ---
+    // --- 5. ОТПРАВКА ---
     function submitScore() {
         const nameInput = document.getElementById('username');
         const name = nameInput.value.trim() || "Anon";
         const timeStr = document.getElementById('timerDisplay').innerText;
         const btn = document.getElementById('saveBtn');
 
-        // Блокируем кнопку
         btn.disabled = true;
         btn.innerText = "Saving...";
 
@@ -396,61 +382,24 @@
             score: score,
             totalQuestions: questions.length,
             timeFormatted: timeStr,
-            timeSeconds: seconds
+            timeSeconds: seconds,
+            category: categoryId // <-- ОТПРАВЛЯЕМ КАТЕГОРИЮ
         };
-
-        console.log("Sending score to:", submitUrl, payload);
 
         fetch(submitUrl, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         })
-            .then(async response => {
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Server Error: ${response.status} ${text}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                // Успех
-                document.getElementById('inputNameArea').style.display = 'none';
-                document.getElementById('leaderboardArea').style.display = 'block';
-                renderLeaderboard(data, name);
+                // Перенаправляем на страницу лидеров
+                window.location.href = "/leaderboard";
             })
             .catch(err => {
-                console.error(err);
-                alert("⚠️ Не удалось сохранить результат!\n" + err.message + "\nУбедитесь, что сервер запущен и вы обновили QuizController.java");
+                alert("Error saving score");
                 btn.disabled = false;
-                btn.innerText = "Save Result";
             });
-    }
-
-    function renderLeaderboard(data, myName) {
-        const tb = document.getElementById('leaderboardBody');
-        tb.innerHTML = '';
-
-        if (!Array.isArray(data)) return;
-
-        data.forEach((e, i) => {
-            let rankStyle = 'font-weight: 600; color: var(--text-muted);';
-            let icon = '';
-            if (i===0) { icon='🥇'; rankStyle='color: #F59E0B; font-weight: 800; font-size: 1.2rem;'; }
-            else if (i===1) { icon='🥈'; rankStyle='color: #64748B; font-weight: 700; font-size: 1.1rem;'; }
-            else if (i===2) { icon='🥉'; rankStyle='color: #B45309; font-weight: 700; font-size: 1.1rem;'; }
-
-            const isMe = e.name && myName && (e.name.toLowerCase() === myName.toLowerCase());
-            const rowStyle = isMe ? 'background-color: rgba(79, 70, 229, 0.1); border-radius: 8px;' : '';
-
-            tb.innerHTML += `
-                    <tr style="${rowStyle}">
-                        <td style="${rankStyle}">${icon} ${i+1}</td>
-                        <td class="fw-bold">${e.name} ${isMe ? '(You)' : ''}</td>
-                        <td><span class="badge" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--btn-border);">${e.score}/${e.totalQuestions}</span></td>
-                        <td style="font-family: 'JetBrains Mono'; font-size: 0.9rem; color: var(--text-muted);">${e.timeFormatted}</td>
-                    </tr>`;
-        });
     }
 </script>
 </body>

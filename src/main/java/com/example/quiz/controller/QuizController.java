@@ -11,18 +11,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class QuizController {
 
     private final QuestionRepository repository;
     private final ObjectMapper objectMapper;
-    private final List<ScoreEntry> leaderboard = new ArrayList<>();
+
+    // Храним рекорды по категориям: Ключ (String) -> Список рекордов
+    // "1", "2" ... - это номера групп, "ALL" - это хардкор режим
+    private final Map<String, List<ScoreEntry>> leaderboards = new ConcurrentHashMap<>();
 
     public QuizController(QuestionRepository repository) {
         this.repository = repository;
@@ -41,17 +41,25 @@ public class QuizController {
         return "study";
     }
 
-    // НОВОЕ: Отдельная страница рейтинга
     @GetMapping("/leaderboard")
     public String showLeaderboard(Model model) {
-        model.addAttribute("scores", leaderboard);
-        return "leaderboard"; // Нужен файл leaderboard.html
+        // Передаем список всех возможных категорий, чтобы нарисовать вкладки, даже если они пустые
+        List<String> categories = new ArrayList<>();
+        // Добавляем группы
+        repository.findDistinctGroups().forEach(g -> categories.add(String.valueOf(g)));
+        // Добавляем хардкор
+        categories.add("ALL");
+
+        model.addAttribute("categories", categories);
+        model.addAttribute("leaderboards", leaderboards);
+        return "leaderboard";
     }
 
     @GetMapping("/quiz/group")
     public String startGroupQuiz(@RequestParam("id") Integer groupId, Model model) throws JsonProcessingException {
         List<Question> questions = repository.findRandomQuestionsByGroup(groupId);
-        prepareModel(model, questions, "Section " + groupId);
+        // Передаем ID категории (например, "1")
+        prepareModel(model, questions, "Section " + groupId, String.valueOf(groupId));
         return "quiz";
     }
 
@@ -59,55 +67,62 @@ public class QuizController {
     public String startAllQuiz(Model model) throws JsonProcessingException {
         List<Question> questions = new ArrayList<>(repository.findAll());
         Collections.shuffle(questions);
-        prepareModel(model, questions, "ALL SECTIONS");
+        // Передаем ID категории "ALL"
+        prepareModel(model, questions, "HARDCORE MODE", "ALL");
         return "quiz";
     }
 
-    private void prepareModel(Model model, List<Question> questions, String title) throws JsonProcessingException {
+    private void prepareModel(Model model, List<Question> questions, String title, String categoryId) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(questions);
         model.addAttribute("questionsJson", json);
         model.addAttribute("currentGroup", title);
+        model.addAttribute("categoryId", categoryId); // Важно: сообщаем фронту, какая это категория
     }
 
     // --- ЛОГИКА ОБНОВЛЕНИЯ РЕКОРДОВ ---
     @PostMapping("/api/submit-score")
     @ResponseBody
     public List<ScoreEntry> submitScore(@RequestBody ScoreEntry newScore) {
-        // 1. Ищем, есть ли уже такой игрок (без учета регистра: User = user)
-        Optional<ScoreEntry> existingEntry = leaderboard.stream()
+        String category = newScore.getCategory();
+        if (category == null || category.isEmpty()) {
+            category = "ALL";
+        }
+
+        // Получаем или создаем список для конкретной категории
+        List<ScoreEntry> currentList = leaderboards.computeIfAbsent(category, k -> new ArrayList<>());
+
+        // 1. Ищем, есть ли уже такой игрок в ЭТОЙ категории
+        Optional<ScoreEntry> existingEntry = currentList.stream()
                 .filter(e -> e.getName().equalsIgnoreCase(newScore.getName()))
                 .findFirst();
 
         if (existingEntry.isPresent()) {
             ScoreEntry oldScore = existingEntry.get();
-
-            // 2. Логика сравнения:
+            // 2. Логика сравнения (Очки > или Очки = но время <)
             boolean betterPoints = newScore.getScore() > oldScore.getScore();
             boolean samePointsButFaster = (newScore.getScore() == oldScore.getScore()) && (newScore.getTimeSeconds() < oldScore.getTimeSeconds());
 
-            // 3. Если новый результат лучше - обновляем
             if (betterPoints || samePointsButFaster) {
                 oldScore.setScore(newScore.getScore());
                 oldScore.setTimeSeconds(newScore.getTimeSeconds());
                 oldScore.setTimeFormatted(newScore.getTimeFormatted());
                 oldScore.setTotalQuestions(newScore.getTotalQuestions());
-                // Можно добавить флаг "updated", чтобы на фронте показать "New Record!"
             }
         } else {
             // 4. Если игрока нет - добавляем
-            leaderboard.add(newScore);
+            currentList.add(newScore);
         }
 
-        // 5. Сортируем: Сначала по очкам (убывание), потом по времени (возрастание)
-        leaderboard.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed()
+        // 5. Сортируем
+        currentList.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed()
                 .thenComparingInt(ScoreEntry::getTimeSeconds));
 
-        // 6. Оставляем топ 15 (увеличим немного лимит)
-        if (leaderboard.size() > 15) {
-            leaderboard.subList(15, leaderboard.size()).clear();
+        // 6. Оставляем топ 15
+        if (currentList.size() > 15) {
+            currentList.subList(15, currentList.size()).clear();
         }
 
-        return leaderboard;
+        return currentList;
     }
 
     @Data @AllArgsConstructor @NoArgsConstructor
@@ -117,5 +132,6 @@ public class QuizController {
         private int totalQuestions;
         private String timeFormatted;
         private int timeSeconds;
+        private String category; // Поле для идентификации ("1", "2" или "ALL")
     }
 }
