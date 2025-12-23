@@ -2,132 +2,229 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Quiz Game</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #fff;
-            --text-main: #333;
-            --btn-bg: #fff;
-            --timer-bg: #e2e8f0;
-            --btn-border: #e2e8f0;
+            /* Light Theme */
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --btn-bg: #FFFFFF;
+            --btn-border: #E2E8F0;
+            --btn-hover-bg: #F1F5F9;
+            --primary: #4F46E5;
+
+            --correct-bg: #D1FAE5; --correct-border: #10B981; --correct-text: #065F46;
+            --wrong-bg: #FEE2E2; --wrong-border: #EF4444; --wrong-text: #991B1B;
+
             --table-border: rgba(0,0,0,0.1);
         }
+
         body.dark-mode {
-            --bg-color: #1a1a2e;
-            --card-bg: #16213e;
-            --text-main: #f0f0f0;
-            --btn-bg: #1f2940;
-            --timer-bg: #2d3748;
-            --btn-border: #2d3748;
+            /* Dark Theme */
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --btn-bg: #1E293B;
+            --btn-border: #334155;
+            --btn-hover-bg: #334155;
+            --primary: #818CF8;
+
+            --correct-bg: rgba(16, 185, 129, 0.2); --correct-border: #10B981; --correct-text: #6EE7B7;
+            --wrong-bg: rgba(239, 68, 68, 0.2); --wrong-border: #EF4444; --wrong-text: #FCA5A5;
+
             --table-border: rgba(255,255,255,0.1);
         }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
 
-        /* UI Elements */
-        .top-bar { background: var(--card-bg); padding: 10px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .timer-badge { font-family: monospace; font-size: 1.2rem; background: var(--timer-bg); padding: 5px 15px; border-radius: 10px; color: #dc2626; font-weight: bold; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            transition: 0.3s;
+        }
 
-        .question-card { background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center; border: 1px solid var(--btn-border); }
-        .shake { animation: shake 0.5s; } @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        /* --- UI Elements --- */
+        .top-bar {
+            background: rgba(var(--card-bg), 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--btn-border);
+            padding: 1rem 1.5rem;
+            position: sticky; top: 0; z-index: 50;
+            display: flex; justify-content: space-between; align-items: center;
+        }
 
-        .option-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .timer-badge {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-color);
+            border: 1px solid var(--btn-border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Options */
+        .option-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         @media (min-width: 768px) { .option-grid { grid-template-columns: 1fr 1fr; } }
 
-        .option-btn { background: var(--btn-bg); border: 2px solid var(--btn-border); color: var(--text-main); padding: 20px; border-radius: 15px; font-weight: 600; text-align: left; transition: 0.1s; cursor: pointer; display: flex; align-items: center; position: relative; }
-        .option-btn:hover { transform: translateY(-3px); border-color: #667eea; }
+        .option-btn {
+            background: var(--btn-bg);
+            border: 2px solid var(--btn-border);
+            color: var(--text-main);
+            padding: 1.25rem;
+            border-radius: 16px;
+            font-weight: 600;
+            text-align: left;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            display: flex; align-items: center;
+        }
 
-        .btn-correct { background-color: #c6f6d5 !important; border-color: #48bb78 !important; color: #065f46 !important; }
-        .btn-wrong { background-color: #fed7d7 !important; border-color: #f56565 !important; color: #991b1b !important; }
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: var(--btn-hover-bg);
+            transform: translateY(-2px);
+        }
 
-        .key-hint { position: absolute; right: 15px; font-size: 0.7rem; opacity: 0.4; border: 1px solid var(--text-main); padding: 2px 6px; border-radius: 4px; }
+        .option-key {
+            background: var(--btn-border);
+            color: var(--text-muted);
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
 
-        /* Leaderboard Styles */
-        .leader-row { transition: 0.2s; }
-        .leader-row:hover { transform: scale(1.02); }
-        .rank-1 { color: #FFD700; } .rank-2 { color: #C0C0C0; } .rank-3 { color: #CD7F32; }
+        .btn-correct { background-color: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+        .btn-correct .option-key { background-color: var(--correct-border); color: #fff; }
 
-        /* --- ИСПРАВЛЕНИЕ ТАБЛИЦЫ ДЛЯ ТЕМНОЙ ТЕМЫ --- */
-        .table {
-            --bs-table-bg: transparent; /* Убираем белый фон Bootstrap */
-            --bs-table-color: var(--text-main); /* Принудительно ставим наш цвет текста */
+        .btn-wrong { background-color: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+        .btn-wrong .option-key { background-color: var(--wrong-border); color: #fff; }
+
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        .control-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .control-btn:hover { color: var(--primary); transform: scale(1.1); }
+
+        /* --- ИСПРАВЛЕНИЕ ТАБЛИЦЫ --- */
+        .table { --bs-table-bg: transparent; --bs-table-color: var(--text-main); color: var(--text-main) !important; }
+        .table td, .table th { background-color: transparent !important; color: var(--text-main) !important; border-bottom: 1px solid var(--btn-border); }
+        .leaderboard-table th { color: var(--text-muted) !important; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* --- ИСПРАВЛЕНИЕ ПОЛЯ ВВОДА И КАРТОЧКИ --- */
+        .input-card {
+            background-color: var(--card-bg) !important;
             color: var(--text-main) !important;
         }
-        .table td, .table th {
-            background-color: transparent !important; /* Прозрачные ячейки */
-            color: var(--text-main) !important; /* Цвет текста из переменной */
-            border-bottom: 1px solid var(--table-border);
+
+        .modern-input {
+            background-color: var(--bg-color) !important;
+            border: 2px solid var(--btn-border) !important;
+            color: var(--text-main) !important;
+            padding: 1rem;
+            border-radius: 12px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
-        .table thead th {
-            border-bottom: 2px solid var(--table-border);
-            opacity: 0.7;
+        .modern-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .modern-input:focus { outline: none; border-color: var(--primary) !important; }
+
+        /* Хак для автозаполнения в Chrome (убирает белый/желтый фон) */
+        .modern-input:-webkit-autofill,
+        .modern-input:-webkit-autofill:hover,
+        .modern-input:-webkit-autofill:focus,
+        .modern-input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px var(--bg-color) inset !important;
+            -webkit-text-fill-color: var(--text-main) !important;
+            transition: background-color 5000s ease-in-out 0s;
         }
     </style>
 </head>
 <body>
 <div class="top-bar">
-    <a href="/" class="text-decoration-none fw-bold text-secondary">✕ EXIT</a>
+    <a href="/" class="text-decoration-none fw-bold" style="color: var(--text-muted)">✕ Exit</a>
     <div class="timer-badge">⏱ <span id="timerDisplay">00:00</span></div>
     <div class="d-flex align-items-center gap-3">
-        <button class="btn border-0 fs-4" onclick="toggleSound()" id="soundBtn" title="Toggle Sound">🔊</button>
-        <button class="btn border-0 fs-5" onclick="toggleTheme()" id="themeBtn" title="Toggle Theme">🌙</button>
+        <button class="control-btn" onclick="toggleSound()" id="soundBtn">🔊</button>
+        <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
         <div class="badge bg-primary rounded-pill px-3 py-2">💎 <span id="scoreVal">0</span></div>
     </div>
 </div>
 
-<div class="container" style="max-width: 800px; margin-top: 30px;">
+<div class="container" style="max-width: 800px; margin-top: 3rem;">
     <div id="gameArea">
-        <div class="d-flex justify-content-between mb-2 small fw-bold opacity-75">
-            <span class="badge bg-secondary bg-opacity-10 text-secondary" th:text="${currentGroup}">SECTION</span>
-            <span><span id="currentNum">1</span> / <span id="totalNum">20</span></span>
+        <div class="d-flex justify-content-between mb-3 px-1">
+            <span class="badge" style="background: var(--btn-border); color: var(--text-muted);" th:text="${currentGroup}">SECTION</span>
+            <span style="color: var(--text-muted); font-weight: 600;"><span id="currentNum">1</span> / <span id="totalNum">20</span></span>
         </div>
 
-        <div class="progress mb-4" style="height: 6px;">
-            <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+        <div class="progress mb-4" style="height: 6px; background: var(--btn-border); border-radius: 3px;">
+            <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%; border-radius: 3px;"></div>
         </div>
 
-        <div class="question-card"><h4 class="fw-bold m-0" id="questionText">Loading...</h4></div>
+        <div class="question-card">
+            <h4 class="fw-bold m-0" style="line-height: 1.5;" id="questionText">Loading...</h4>
+        </div>
         <div id="optionsArea" class="option-grid"></div>
     </div>
 
-    <div id="inputNameArea" class="text-center" style="display: none; margin-top: 50px;">
-        <div class="card p-5 border-0 shadow-lg rounded-5" style="background: var(--card-bg); color: var(--text-main);">
-            <div style="font-size: 4rem;">🏁</div>
-            <h2>Finished in <span id="finalTime" class="text-primary"></span></h2>
-            <h3 class="mb-4">Score: <span id="finalScore"></span></h3>
+    <div id="inputNameArea" class="text-center fade-in" style="display: none; margin-top: 4rem;">
+        <div style="font-size: 5rem; margin-bottom: 1rem;">🏁</div>
+        <h2 class="fw-bold mb-2">Finished!</h2>
+        <p class="fs-5 mb-4" style="color: var(--text-muted);">
+            Time: <span id="finalTime" style="color: var(--primary); font-weight: bold;"></span> |
+            Score: <span id="finalScore" style="color: var(--primary); font-weight: bold;"></span>
+        </p>
 
-            <div class="mb-3">
-                <input type="text" id="username" class="form-control form-control-lg text-center rounded-pill mb-2" placeholder="Enter Your Name" maxlength="15" style="background: var(--btn-bg); color: var(--text-main); border: 1px solid var(--btn-border);">
-                <small class="opacity-50">Enter name to save result</small>
-            </div>
-
-            <button onclick="submitScore()" class="btn btn-success btn-lg rounded-pill w-100 fw-bold shadow">Save & Check Rank</button>
+        <div class="card p-4 border-0 shadow-lg rounded-4 mx-auto input-card" style="max-width: 400px;">
+            <input type="text" id="username" class="modern-input" placeholder="Enter Name" maxlength="15">
+            <button onclick="submitScore()" class="btn btn-primary w-100 py-3 rounded-3 fw-bold fs-5">Save Result</button>
         </div>
     </div>
 
     <div id="leaderboardArea" style="display: none;">
-        <div class="card p-4 border-0 shadow-lg rounded-5" style="background: var(--card-bg); color: var(--text-main);">
+        <div class="card p-4 border-0 shadow-sm rounded-4 input-card">
             <h3 class="text-center fw-bold mb-4">🏆 Hall of Fame</h3>
 
-            <table class="table table-borderless align-middle">
+            <table class="table table-borderless leaderboard-table align-middle">
                 <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time</th></tr></thead>
                 <tbody id="leaderboardBody"></tbody>
             </table>
 
             <div class="d-grid gap-2 mt-4">
-                <button onclick="location.reload()" class="btn btn-primary rounded-pill py-3 fw-bold">Play Again</button>
-                <a href="/" class="btn btn-outline-secondary rounded-pill py-3 fw-bold">Menu</a>
+                <button onclick="location.reload()" class="btn btn-primary py-3 rounded-3 fw-bold">Play Again</button>
+                <a href="/" class="btn py-3 rounded-3 fw-bold" style="background: var(--bg-color); color: var(--text-main);">Home</a>
             </div>
         </div>
     </div>
 </div>
 
 <script th:inline="javascript">
-    // --- AUDIO SYSTEM ---
+    // --- AUDIO ---
     let soundOn = true;
     const sCorrect = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3');
     const sWrong = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=wrong-answer-129254.mp3');
@@ -145,7 +242,7 @@
         }
     }
 
-    // --- THEME SYSTEM ---
+    // --- THEME ---
     const body = document.body;
     if (localStorage.getItem('theme') === 'dark') {
         body.classList.add('dark-mode');
@@ -162,7 +259,6 @@
     const questions = JSON.parse([[${questionsJson}]]);
     let idx = 0, score = 0, locked = false, seconds = 0, timerInt;
 
-    // Init
     document.getElementById('totalNum').innerText = questions.length;
     timerInt = setInterval(() => {
         seconds++;
@@ -173,7 +269,6 @@
 
     render();
 
-    // Keyboard Support
     document.addEventListener('keydown', e => {
         if(!locked && ['1','2','3','4','5'].includes(e.key)) {
             const btns = document.querySelectorAll('.option-btn');
@@ -200,9 +295,8 @@
             if(v.t && v.t.trim()){
                 const btn = document.createElement('div'); btn.className = 'option-btn';
                 btn.innerHTML = `
-                        <span class="text-primary fw-bold me-3 fs-5">${v.k}.</span>
+                        <div class="option-key">${v.k}</div>
                         <span class="flex-grow-1">${v.t}</span>
-                        <span class="key-hint">${count}</span>
                     `;
                 btn.onclick = () => check(btn, v.k, q.correctAnswer);
                 btn.dataset.k = v.k;
@@ -251,7 +345,7 @@
     }
 
     function submitScore() {
-        const name = document.getElementById('username').value || "Anonymous";
+        const name = document.getElementById('username').value || "Anon";
         const timeStr = document.getElementById('finalTime').innerText;
 
         const payload = {
@@ -278,23 +372,23 @@
         tb.innerHTML = '';
 
         data.forEach((e, i) => {
-            let rankClass = '';
+            let rankStyle = 'font-weight: 600; color: var(--text-muted);';
             let icon = '';
-            if(i===0){ icon='👑'; rankClass='rank-1 fw-bold fs-4'; }
-            else if(i===1){ icon='🥈'; rankClass='rank-2 fw-bold fs-5'; }
-            else if(i===2){ icon='🥉'; rankClass='rank-3 fw-bold fs-5'; }
+            if(i===0){ icon='🥇'; rankStyle='color: #F59E0B; font-weight: 800; font-size: 1.2rem;'; }
+            else if(i===1){ icon='🥈'; rankStyle='color: #64748B; font-weight: 700; font-size: 1.1rem;'; }
+            else if(i===2){ icon='🥉'; rankStyle='color: #B45309; font-weight: 700; font-size: 1.1rem;'; }
 
             const isMe = e.name.toLowerCase() === myName.toLowerCase();
-            const highlight = isMe ? 'background: rgba(13, 110, 253, 0.15); border-left: 4px solid #0d6efd;' : '';
+            const rowStyle = isMe ? 'background-color: rgba(79, 70, 229, 0.1); border-radius: 8px;' : '';
 
             tb.innerHTML += `
-                    <tr class="leader-row" style="${highlight}">
-                        <td class="${rankClass}">${icon} ${i+1}</td>
+                    <tr style="${rowStyle}">
+                        <td style="${rankStyle}">${icon} ${i+1}</td>
                         <td class="fw-bold">${e.name} ${isMe ? '(You)' : ''}</td>
                         <td>
-                            <span class="badge bg-primary rounded-pill">${e.score}/${e.totalQuestions}</span>
+                            <span class="badge" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--btn-border);">${e.score}/${e.totalQuestions}</span>
                         </td>
-                        <td class="font-monospace opacity-75">${e.timeFormatted}</td>
+                        <td style="font-family: 'JetBrains Mono'; font-size: 0.9rem; color: var(--text-muted);">${e.timeFormatted}</td>
                     </tr>`;
         });
     }

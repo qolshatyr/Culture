@@ -2,69 +2,180 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Quiz App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #333;
+            /* Light Theme */
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --accent-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-border: 1px solid #E2E8F0;
         }
+
         body.dark-mode {
-            --bg-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-            --card-bg: rgba(30, 34, 45, 0.95);
-            --text-main: #f0f0f0;
+            /* Dark Theme */
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F1F5F9;
+            --text-muted: #94A3B8;
+            --primary: #818CF8;
+            --primary-hover: #6366F1;
+            --accent-gradient: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --card-border: 1px solid #334155;
         }
+
         body {
-            font-family: 'Poppins', sans-serif; background: var(--bg-gradient); min-height: 100vh; color: var(--text-main); transition: 0.5s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        /* Анимация фона */
-        .background-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: hidden;}
-        .cube { position: absolute; border: 1px solid rgba(255,255,255,0.3); width: 20px; height: 20px; animation: cube 10s linear infinite; opacity: 0; }
-        .cube:nth-child(1) { left: 10%; top: 90%; animation-delay: 0s; }
-        .cube:nth-child(2) { left: 30%; top: 90%; animation-delay: 2s; width: 40px; height: 40px; }
-        .cube:nth-child(3) { left: 70%; top: 90%; animation-delay: 4s; }
-        .cube:nth-child(4) { left: 90%; top: 90%; animation-delay: 6s; width: 60px; height: 60px; }
-        @keyframes cube { from { transform: translateY(0) rotate(0deg); opacity: 0.8; } to { transform: translateY(-800px) rotate(720deg); opacity: 0; } }
+
+        .bg-blob {
+            position: fixed;
+            width: 600px; height: 600px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.15;
+            z-index: 0;
+            border-radius: 50%;
+            animation: blobMove 20s infinite alternate;
+        }
+        .blob-1 { top: -200px; left: -200px; }
+        .blob-2 { bottom: -200px; right: -200px; background: #EC4899; animation-delay: -10s; }
+
+        @keyframes blobMove {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
 
         .container { position: relative; z-index: 2; }
-        .topic-card { background: var(--card-bg); border: none; border-radius: 20px; transition: 0.3s; height: 100%; color: var(--text-main); cursor: pointer; }
-        .topic-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
-        .theme-toggle { position: fixed; top: 20px; right: 20px; border: none; background: var(--card-bg); width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 100; cursor: pointer; }
+
+        .topic-card {
+            background: var(--card-bg);
+            border: var(--card-border);
+            border-radius: 24px;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--card-shadow);
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .topic-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary);
+        }
+
+        .icon-box {
+            width: 80px; height: 80px;
+            background: var(--bg-color);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            transition: 0.3s;
+        }
+        .topic-card:hover .icon-box { background: var(--accent-gradient); color: white; transform: rotate(10deg); }
+
+        .btn-modern {
+            background: var(--card-bg);
+            border: var(--card-border);
+            color: var(--text-main);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: 0.2s;
+            box-shadow: var(--card-shadow);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            background: var(--bg-color);
+            color: var(--primary);
+        }
+
+        .btn-primary-modern {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+        .btn-primary-modern:hover {
+            background: var(--primary-hover);
+            color: white;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .theme-toggle {
+            position: fixed; top: 20px; right: 20px;
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: var(--card-border);
+            color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            z-index: 100;
+            transition: 0.3s;
+        }
+        .theme-toggle:hover { transform: rotate(15deg); }
     </style>
 </head>
 <body>
-<div class="background-animation"><div class="cube"></div><div class="cube"></div><div class="cube"></div><div class="cube"></div></div>
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
+
 <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
 
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1 class="fw-bold display-4 text-white">🚀 Quiz Master</h1>
-        <p class="text-white-50">Select a section to start</p>
+        <h1 class="fw-bold display-3 mb-2" style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Quiz Master
+        </h1>
+        <p class="fs-5" style="color: var(--text-muted)">Choose a module to practice</p>
     </div>
 
     <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
         <div class="col" th:each="grp : ${groups}">
-            <a th:href="@{/quiz/group(id=${grp})}" class="text-decoration-none">
-                <div class="topic-card p-4 text-center">
-                    <div style="font-size: 3rem;">📚</div>
-                    <h3 class="fw-bold mt-2" th:text="'Section ' + ${grp}"></h3>
-                    <div class="text-primary fw-bold mt-3">Start ▶</div>
-                </div>
+            <a th:href="@{/quiz/group(id=${grp})}" class="topic-card text-decoration-none">
+                <div class="icon-box">📚</div>
+                <h3 class="fw-bold h4 mb-2" th:text="'Section ' + ${grp}"></h3>
+                <p class="small mb-4" style="color: var(--text-muted)">20 questions</p>
+                <span class="btn-modern btn-primary-modern px-4 w-100 mt-auto">Start</span>
             </a>
         </div>
     </div>
 
     <div class="text-center mt-5 d-flex justify-content-center gap-3 flex-wrap">
-        <a href="/quiz/all" class="btn btn-outline-light rounded-pill px-4 fw-bold">🔥 Hardcore Mode</a>
-        <a href="/leaderboard" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">🏆 Leaderboard</a>
-        <a href="/study" class="btn btn-light rounded-pill px-4 fw-bold text-dark">📖 Flashcards</a>
+        <a href="/quiz/all" class="btn-modern btn-primary-modern">🔥 Hardcore (All Questions)</a>
+        <a href="/leaderboard" class="btn-modern">🏆 Leaderboard</a>
+        <a href="/study" class="btn-modern">📖 Flashcards</a>
     </div>
 </div>
 
 <script>
     const body = document.body;
-    if (localStorage.getItem('theme') === 'dark') { body.classList.add('dark-mode'); document.getElementById('themeBtn').innerText = '☀️'; }
+    if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        document.getElementById('themeBtn').innerText = '☀️';
+    }
     function toggleTheme() {
         body.classList.toggle('dark-mode');
         const isDark = body.classList.contains('dark-mode');
