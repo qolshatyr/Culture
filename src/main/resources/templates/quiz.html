@@ -281,6 +281,7 @@
 
             opts.innerHTML = '';
 
+            // Собираем варианты
             let variants = [
                 {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
             ].filter(v => v.t && v.t.trim());
@@ -291,10 +292,14 @@
             variants.forEach((v, i) => {
                 const btn = document.createElement('div');
                 btn.className = 'option-btn';
+
+                // ВОТ ЗДЕСЬ МЫ ДОБАВИЛИ <span class="key-hint">
                 btn.innerHTML = `
                         <div class="option-key">${labels[i]}</div>
                         <span class="flex-grow-1">${v.t}</span>
+                        <span class="key-hint">Key ${i+1}</span>
                     `;
+
                 btn.onclick = () => check(btn, v.k, q.correctAnswer);
                 btn.dataset.k = v.k;
                 opts.appendChild(btn);
@@ -315,19 +320,20 @@
         const cleanCorr = corr ? corr.trim().toUpperCase() : "";
 
         if (cleanK === cleanCorr) {
+            // Правильный ответ: только зеленый цвет
             btn.classList.add('btn-correct');
-            btn.innerHTML += ` <span style="float:right;">✅</span>`;
             score++; streak++;
             updateStreakUI();
             play('c');
         } else {
+            // Неправильный ответ: красный цвет
             btn.classList.add('btn-wrong');
-            btn.innerHTML += ` <span style="float:right;">❌</span>`;
             document.querySelector('.question-card').classList.add('shake');
+
+            // Подсветка правильного ответа (тоже только цветом)
             document.querySelectorAll('.option-btn').forEach(b => {
                 if (b.dataset.k === cleanCorr) {
                     b.classList.add('btn-correct');
-                    if(!b.innerHTML.includes('✅')) b.innerHTML += ` <span style="float:right;">✅</span>`;
                 }
             });
             streak = 0; updateStreakUI();
