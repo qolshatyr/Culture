@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            /* Light Theme */
+            /* Переменные темы */
             --bg-color: #F8FAFC;
             --card-bg: #FFFFFF;
             --text-main: #0F172A;
@@ -17,157 +17,115 @@
             --btn-border: #E2E8F0;
             --btn-hover-bg: #F1F5F9;
             --primary: #4F46E5;
-
+            --accent-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
             --correct-bg: #D1FAE5; --correct-border: #10B981; --correct-text: #065F46;
             --wrong-bg: #FEE2E2; --wrong-border: #EF4444; --wrong-text: #991B1B;
-
-            --table-border: rgba(0,0,0,0.1);
         }
 
         body.dark-mode {
-            /* Dark Theme */
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --btn-bg: #1E293B;
-            --btn-border: #334155;
-            --btn-hover-bg: #334155;
+            --bg-color: #0F172A; --card-bg: #1E293B; --text-main: #F8FAFC; --text-muted: #94A3B8;
+            --btn-bg: #1E293B; --btn-border: #334155; --btn-hover-bg: #334155;
             --primary: #818CF8;
-
             --correct-bg: rgba(16, 185, 129, 0.2); --correct-border: #10B981; --correct-text: #6EE7B7;
             --wrong-bg: rgba(239, 68, 68, 0.2); --wrong-border: #EF4444; --wrong-text: #FCA5A5;
-
-            --table-border: rgba(255,255,255,0.1);
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-            transition: 0.3s;
+            background-color: var(--bg-color); color: var(--text-main);
+            min-height: 100vh; display: flex; flex-direction: column; transition: 0.3s;
         }
 
-        /* --- UI Elements --- */
+        /* Верхняя панель */
         .top-bar {
-            background: rgba(var(--card-bg), 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--btn-border);
-            padding: 1rem 1.5rem;
-            position: sticky; top: 0; z-index: 50;
-            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(var(--card-bg), 0.8); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--btn-border); padding: 1rem 1.5rem;
+            position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center;
         }
-
         .timer-badge {
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--bg-color);
-            border: 1px solid var(--btn-border);
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            color: var(--primary);
-            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; background: var(--bg-color);
+            border: 1px solid var(--btn-border); padding: 0.4rem 0.8rem; border-radius: 8px;
+            color: var(--primary); font-weight: 700;
         }
 
-        /* Question Card */
+        /* Streak (Серия побед) */
+        .streak-container {
+            display: none; align-items: center; gap: 0.5rem;
+            background: var(--bg-color); border: 1px solid var(--btn-border);
+            padding: 0.4rem 0.8rem; border-radius: 8px;
+        }
+        .pop-in { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* Карточка вопроса */
         .question-card {
-            background: var(--card-bg);
-            border: 1px solid var(--btn-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
+            background: var(--card-bg); border: 1px solid var(--btn-border); border-radius: 24px;
+            padding: 2.5rem; margin-bottom: 1.5rem; text-align: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+        .fade-enter { opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        .fade-enter-active { opacity: 1; transform: translateY(0); }
 
-        /* Options */
+        /* Кнопки ответов */
         .option-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         @media (min-width: 768px) { .option-grid { grid-template-columns: 1fr 1fr; } }
 
         .option-btn {
-            background: var(--btn-bg);
-            border: 2px solid var(--btn-border);
-            color: var(--text-main);
-            padding: 1.25rem;
-            border-radius: 16px;
-            font-weight: 600;
-            text-align: left;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            display: flex; align-items: center;
+            background: var(--btn-bg); border: 2px solid var(--btn-border); color: var(--text-main);
+            padding: 1.25rem; border-radius: 16px; font-weight: 600; text-align: left;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+            position: relative; display: flex; align-items: center; padding-right: 4rem;
         }
-
-        .option-btn:hover {
-            border-color: var(--primary);
-            background: var(--btn-hover-bg);
-            transform: translateY(-2px);
-        }
-
+        .option-btn:hover { border-color: var(--primary); background: var(--btn-hover-bg); transform: translateY(-2px); }
         .option-key {
-            background: var(--btn-border);
-            color: var(--text-muted);
-            width: 28px; height: 28px;
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            margin-right: 12px;
-            font-size: 0.85rem;
-            font-weight: 700;
+            background: var(--btn-border); color: var(--text-muted);
+            width: 28px; height: 28px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; margin-right: 12px;
+            font-size: 0.85rem; font-weight: 700;
+        }
+        .key-hint {
+            position: absolute; right: 15px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem; color: var(--text-muted); opacity: 0.6;
+            border: 1px solid var(--btn-border); padding: 2px 6px; border-radius: 6px;
         }
 
+        /* Цвета ответов */
         .btn-correct { background-color: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
         .btn-correct .option-key { background-color: var(--correct-border); color: #fff; }
-
         .btn-wrong { background-color: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
         .btn-wrong .option-key { background-color: var(--wrong-border); color: #fff; }
 
         .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
 
+        /* Вспомогательные элементы */
         .control-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
         .control-btn:hover { color: var(--primary); transform: scale(1.1); }
-
-        /* --- ИСПРАВЛЕНИЕ ТАБЛИЦЫ --- */
+        .star-rating { font-size: 3rem; margin-bottom: 10px; display: inline-block; }
+        .star-rating span { opacity: 0.3; transition: 0.3s; transform: scale(0.8); display: inline-block; }
+        .star-rating span.active { opacity: 1; transform: scale(1.1); text-shadow: 0 0 20px rgba(245, 158, 11, 0.5); color: #F59E0B; }
         .table { --bs-table-bg: transparent; --bs-table-color: var(--text-main); color: var(--text-main) !important; }
         .table td, .table th { background-color: transparent !important; color: var(--text-main) !important; border-bottom: 1px solid var(--btn-border); }
-        .leaderboard-table th { color: var(--text-muted) !important; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-
-        /* --- ИСПРАВЛЕНИЕ ПОЛЯ ВВОДА И КАРТОЧКИ --- */
-        .input-card {
-            background-color: var(--card-bg) !important;
-            color: var(--text-main) !important;
-        }
-
+        .input-card { background-color: var(--card-bg) !important; color: var(--text-main) !important; }
         .modern-input {
-            background-color: var(--bg-color) !important;
-            border: 2px solid var(--btn-border) !important;
-            color: var(--text-main) !important;
-            padding: 1rem;
-            border-radius: 12px;
-            width: 100%;
-            text-align: center;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+            background-color: var(--bg-color) !important; border: 2px solid var(--btn-border) !important;
+            color: var(--text-main) !important; padding: 1rem; border-radius: 12px;
+            width: 100%; text-align: center; font-size: 1.2rem; margin-bottom: 1rem;
         }
-        .modern-input::placeholder { color: var(--text-muted); opacity: 0.7; }
         .modern-input:focus { outline: none; border-color: var(--primary) !important; }
-
-        /* Хак для автозаполнения в Chrome (убирает белый/желтый фон) */
-        .modern-input:-webkit-autofill,
-        .modern-input:-webkit-autofill:hover,
-        .modern-input:-webkit-autofill:focus,
-        .modern-input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px var(--bg-color) inset !important;
-            -webkit-text-fill-color: var(--text-main) !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
+        .progress-bar { background: var(--accent-gradient); transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body>
 <div class="top-bar">
     <a href="/" class="text-decoration-none fw-bold" style="color: var(--text-muted)">✕ Exit</a>
-    <div class="timer-badge">⏱ <span id="timerDisplay">00:00</span></div>
+    <div class="d-flex align-items-center">
+        <div class="timer-badge">⏱ <span id="timerDisplay">00:00</span></div>
+        <div class="streak-container ms-3" id="streakBox">
+            <span style="font-size: 1.2rem;">🔥</span>
+            <span class="fw-bold" style="color: #F59E0B;" id="streakVal">0</span>
+        </div>
+    </div>
     <div class="d-flex align-items-center gap-3">
         <button class="control-btn" onclick="toggleSound()" id="soundBtn">🔊</button>
         <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
@@ -179,42 +137,48 @@
     <div id="gameArea">
         <div class="d-flex justify-content-between mb-3 px-1">
             <span class="badge" style="background: var(--btn-border); color: var(--text-muted);" th:text="${currentGroup}">SECTION</span>
-            <span style="color: var(--text-muted); font-weight: 600;"><span id="currentNum">1</span> / <span id="totalNum">20</span></span>
+            <span style="color: var(--text-muted); font-weight: 600;">
+                <span id="currentNum">1</span> / <span id="totalNum">20</span>
+            </span>
         </div>
 
         <div class="progress mb-4" style="height: 6px; background: var(--btn-border); border-radius: 3px;">
-            <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%; border-radius: 3px;"></div>
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; border-radius: 3px;"></div>
         </div>
 
-        <div class="question-card">
+        <div class="question-card fade-enter">
             <h4 class="fw-bold m-0" style="line-height: 1.5;" id="questionText">Loading...</h4>
         </div>
         <div id="optionsArea" class="option-grid"></div>
+        <div class="text-center mt-3 text-muted small opacity-50">Press 1-5 on keyboard</div>
     </div>
 
-    <div id="inputNameArea" class="text-center fade-in" style="display: none; margin-top: 4rem;">
-        <div style="font-size: 5rem; margin-bottom: 1rem;">🏁</div>
-        <h2 class="fw-bold mb-2">Finished!</h2>
+    <div id="inputNameArea" class="text-center fade-in" style="display: none; margin-top: 2rem;">
+        <div class="star-rating" id="starRating">
+            <span>⭐</span><span>⭐</span><span>⭐</span>
+        </div>
+        <h2 class="fw-bold mb-2">Quiz Completed!</h2>
         <p class="fs-5 mb-4" style="color: var(--text-muted);">
-            Time: <span id="finalTime" style="color: var(--primary); font-weight: bold;"></span> |
             Score: <span id="finalScore" style="color: var(--primary); font-weight: bold;"></span>
         </p>
 
         <div class="card p-4 border-0 shadow-lg rounded-4 mx-auto input-card" style="max-width: 400px;">
             <input type="text" id="username" class="modern-input" placeholder="Enter Name" maxlength="15">
-            <button onclick="submitScore()" class="btn btn-primary w-100 py-3 rounded-3 fw-bold fs-5">Save Result</button>
+            <button type="button" id="saveBtn" onclick="submitScore()"
+                    class="btn btn-primary w-100 py-3 rounded-3 fw-bold fs-5"
+                    style="background: var(--accent-gradient); border:none;">
+                Save Result
+            </button>
         </div>
     </div>
 
     <div id="leaderboardArea" style="display: none;">
         <div class="card p-4 border-0 shadow-sm rounded-4 input-card">
             <h3 class="text-center fw-bold mb-4">🏆 Hall of Fame</h3>
-
-            <table class="table table-borderless leaderboard-table align-middle">
+            <table class="table table-borderless table-hover align-middle">
                 <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time</th></tr></thead>
                 <tbody id="leaderboardBody"></tbody>
             </table>
-
             <div class="d-grid gap-2 mt-4">
                 <button onclick="location.reload()" class="btn btn-primary py-3 rounded-3 fw-bold">Play Again</button>
                 <a href="/" class="btn py-3 rounded-3 fw-bold" style="background: var(--bg-color); color: var(--text-main);">Home</a>
@@ -224,29 +188,27 @@
 </div>
 
 <script th:inline="javascript">
-    // --- AUDIO ---
+    // --- 1. НАСТРОЙКИ И АУДИО ---
     let soundOn = true;
     const sCorrect = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3');
     const sWrong = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=wrong-answer-129254.mp3');
     const sWin = new Audio('https://cdn.pixabay.com/download/audio/2022/10/24/audio_0df9765799.mp3?filename=winfanfare-6959.mp3');
 
-    function toggleSound(){
-        soundOn=!soundOn;
+    function toggleSound() {
+        soundOn = !soundOn;
         document.getElementById('soundBtn').innerText = soundOn ? '🔊' : '🔇';
     }
-    function play(type){
-        if(soundOn){
-            if(type==='c'){ sCorrect.currentTime=0; sCorrect.play(); }
-            if(type==='w'){ sWrong.currentTime=0; sWrong.play(); }
-            if(type==='f'){ sWin.currentTime=0; sWin.play(); }
-        }
+    function play(type) {
+        if (!soundOn) return;
+        if (type === 'c') { sCorrect.currentTime=0; sCorrect.play(); }
+        if (type === 'w') { sWrong.currentTime=0; sWrong.play(); }
+        if (type === 'f') { sWin.currentTime=0; sWin.play(); }
     }
 
-    // --- THEME ---
+    // ТЕМА
     const body = document.body;
     if (localStorage.getItem('theme') === 'dark') {
-        body.classList.add('dark-mode');
-        document.getElementById('themeBtn').innerText = '☀️';
+        body.classList.add('dark-mode'); document.getElementById('themeBtn').innerText = '☀️';
     }
     function toggleTheme() {
         body.classList.toggle('dark-mode');
@@ -255,78 +217,146 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // --- GAME LOGIC ---
-    const questions = JSON.parse([[${questionsJson}]]);
+    // --- 2. ИНИЦИАЛИЗАЦИЯ ИГРЫ (С ЗАЩИТОЙ ОТ ОШИБОК) ---
+    let questions = [];
+    try {
+        // Thymeleaf безопасно вставит JSON строку
+        const rawJson = [[${questionsJson}]];
+        questions = JSON.parse(rawJson);
+    } catch (e) {
+        console.error("CRITICAL ERROR: Could not parse questions JSON!", e);
+        alert("Ошибка загрузки вопросов. Проверьте консоль браузера.");
+    }
+
     let idx = 0, score = 0, locked = false, seconds = 0, timerInt;
+    let streak = 0;
 
-    document.getElementById('totalNum').innerText = questions.length;
-    timerInt = setInterval(() => {
-        seconds++;
-        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-        const s = (seconds % 60).toString().padStart(2, '0');
-        document.getElementById('timerDisplay').innerText = `${m}:${s}`;
-    }, 1000);
+    // Ссылка на API (генерируется Thymeleaf для поддержки контекста)
+    const submitUrl = [[@{/api/submit-score}]];
 
-    render();
+    if (questions && questions.length > 0) {
+        document.getElementById('totalNum').innerText = questions.length;
+        timerInt = setInterval(() => {
+            seconds++;
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+        }, 1000);
+        render();
+    } else {
+        document.getElementById('questionText').innerText = "No questions found!";
+    }
 
+    // Перемешивание массива
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Клавиатура
     document.addEventListener('keydown', e => {
-        if(!locked && ['1','2','3','4','5'].includes(e.key)) {
+        if (!locked && ['1','2','3','4','5'].includes(e.key)) {
             const btns = document.querySelectorAll('.option-btn');
-            if(btns[e.key-1]) btns[e.key-1].click();
+            if (btns[e.key-1]) btns[e.key-1].click();
         }
     });
 
+    // --- 3. ОТРИСОВКА ВОПРОСА ---
     function render() {
-        if(idx >= questions.length) return finish();
-        const q = questions[idx]; locked = false;
+        if (idx >= questions.length) return finish();
 
-        document.getElementById('currentNum').innerText = idx + 1;
-        document.getElementById('questionText').innerText = q.questionText;
-        document.getElementById('progressBar').style.width = ((idx)/questions.length)*100 + '%';
+        const qCard = document.querySelector('.question-card');
+        const opts = document.getElementById('optionsArea');
 
-        const area = document.getElementById('optionsArea'); area.innerHTML = '';
+        qCard.classList.remove('fade-enter-active');
+        qCard.classList.add('fade-enter');
+        opts.style.opacity = '0';
 
-        const variants = [
-            {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
-        ];
+        setTimeout(() => {
+            const q = questions[idx];
+            locked = false;
 
-        let count = 1;
-        variants.forEach(v => {
-            if(v.t && v.t.trim()){
-                const btn = document.createElement('div'); btn.className = 'option-btn';
+            document.getElementById('currentNum').innerText = idx + 1;
+            document.getElementById('questionText').innerText = q.questionText;
+            document.getElementById('progressBar').style.width = ((idx) / questions.length) * 100 + '%';
+
+            opts.innerHTML = '';
+
+            // Собираем варианты и перемешиваем
+            let variants = [
+                {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
+            ].filter(v => v.t && v.t.trim());
+
+            shuffle(variants);
+
+            const labels = ['A','B','C','D','E'];
+
+            variants.forEach((v, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
                 btn.innerHTML = `
-                        <div class="option-key">${v.k}</div>
+                        <div class="option-key">${labels[i]}</div>
                         <span class="flex-grow-1">${v.t}</span>
+                        <span class="key-hint">Key ${i+1}</span>
                     `;
                 btn.onclick = () => check(btn, v.k, q.correctAnswer);
-                btn.dataset.k = v.k;
-                area.appendChild(btn);
-                count++;
-            }
-        });
+                btn.dataset.k = v.k; // Храним оригинальную букву для проверки
+                opts.appendChild(btn);
+            });
+
+            requestAnimationFrame(() => {
+                qCard.classList.add('fade-enter-active');
+                opts.style.transition = 'opacity 0.4s ease 0.1s';
+                opts.style.opacity = '1';
+            });
+        }, 50);
     }
 
+    // --- 4. ПРОВЕРКА ОТВЕТА ---
     function check(btn, k, corr) {
-        if(locked) return; locked = true;
-        const cleanK = k.trim().toUpperCase();
-        const cleanCorr = corr.trim().toUpperCase();
+        if (locked) return;
+        locked = true;
+        const cleanK = k ? k.trim().toUpperCase() : "";
+        const cleanCorr = corr ? corr.trim().toUpperCase() : "";
 
-        if(cleanK === cleanCorr) {
+        if (cleanK === cleanCorr) {
             btn.classList.add('btn-correct');
-            score++;
-            document.getElementById('scoreVal').innerText = score;
+            btn.innerHTML += ` <span style="position: absolute; right: 20px;">✅</span>`;
+            score++; streak++;
+            updateStreakUI();
             play('c');
         } else {
             btn.classList.add('btn-wrong');
+            btn.innerHTML += ` <span style="position: absolute; right: 20px;">❌</span>`;
             document.querySelector('.question-card').classList.add('shake');
-            setTimeout(()=>document.querySelector('.question-card').classList.remove('shake'), 500);
 
+            // Подсветка правильного
             document.querySelectorAll('.option-btn').forEach(b => {
-                if(b.dataset.k === cleanCorr) b.classList.add('btn-correct');
+                if (b.dataset.k === cleanCorr) {
+                    b.classList.add('btn-correct');
+                    if(!b.innerHTML.includes('✅')) b.innerHTML += ` <span style="position: absolute; right: 20px;">✅</span>`;
+                }
             });
+            streak = 0; updateStreakUI();
             play('w');
         }
+        document.getElementById('scoreVal').innerText = score;
         setTimeout(() => { idx++; render(); }, 1200);
+    }
+
+    function updateStreakUI() {
+        const box = document.getElementById('streakBox');
+        const val = document.getElementById('streakVal');
+        val.innerText = "x" + streak;
+        if (streak > 1) {
+            box.style.display = 'flex';
+            box.classList.remove('pop-in'); void box.offsetWidth; box.classList.add('pop-in');
+            val.style.color = (streak >= 5) ? '#EF4444' : '#F59E0B';
+        } else {
+            box.style.display = 'none';
+        }
     }
 
     function finish() {
@@ -334,19 +364,32 @@
         document.getElementById('gameArea').style.display = 'none';
         document.getElementById('inputNameArea').style.display = 'block';
         document.getElementById('progressBar').style.width = '100%';
-
-        document.getElementById('finalTime').innerText = document.getElementById('timerDisplay').innerText;
         document.getElementById('finalScore').innerText = score + " / " + questions.length;
 
-        if(score > questions.length/2) {
+        // Звезды
+        const percentage = (score / questions.length) * 100;
+        const stars = document.querySelectorAll('#starRating span');
+        stars.forEach(s => s.classList.remove('active'));
+        if (percentage > 0) setTimeout(() => stars[0].classList.add('active'), 200);
+        if (percentage >= 50) setTimeout(() => stars[1].classList.add('active'), 600);
+        if (percentage >= 80) setTimeout(() => stars[2].classList.add('active'), 1000);
+
+        if (percentage >= 50) {
             play('f');
             confetti({particleCount:150, spread:70, origin:{y:0.6}});
         }
     }
 
+    // --- 5. ОТПРАВКА РЕЗУЛЬТАТА ---
     function submitScore() {
-        const name = document.getElementById('username').value || "Anon";
-        const timeStr = document.getElementById('finalTime').innerText;
+        const nameInput = document.getElementById('username');
+        const name = nameInput.value.trim() || "Anon";
+        const timeStr = document.getElementById('timerDisplay').innerText;
+        const btn = document.getElementById('saveBtn');
+
+        // Блокируем кнопку
+        btn.disabled = true;
+        btn.innerText = "Saving...";
 
         const payload = {
             name: name,
@@ -356,38 +399,55 @@
             timeSeconds: seconds
         };
 
-        fetch('/api/submit-score', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
+        console.log("Sending score to:", submitUrl, payload);
+
+        fetch(submitUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
-        }).then(r=>r.json()).then(data => {
-            document.getElementById('inputNameArea').style.display = 'none';
-            document.getElementById('leaderboardArea').style.display = 'block';
-            renderLeaderboard(data, name);
-        });
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Server Error: ${response.status} ${text}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Успех
+                document.getElementById('inputNameArea').style.display = 'none';
+                document.getElementById('leaderboardArea').style.display = 'block';
+                renderLeaderboard(data, name);
+            })
+            .catch(err => {
+                console.error(err);
+                alert("⚠️ Не удалось сохранить результат!\n" + err.message + "\nУбедитесь, что сервер запущен и вы обновили QuizController.java");
+                btn.disabled = false;
+                btn.innerText = "Save Result";
+            });
     }
 
     function renderLeaderboard(data, myName) {
         const tb = document.getElementById('leaderboardBody');
         tb.innerHTML = '';
 
+        if (!Array.isArray(data)) return;
+
         data.forEach((e, i) => {
             let rankStyle = 'font-weight: 600; color: var(--text-muted);';
             let icon = '';
-            if(i===0){ icon='🥇'; rankStyle='color: #F59E0B; font-weight: 800; font-size: 1.2rem;'; }
-            else if(i===1){ icon='🥈'; rankStyle='color: #64748B; font-weight: 700; font-size: 1.1rem;'; }
-            else if(i===2){ icon='🥉'; rankStyle='color: #B45309; font-weight: 700; font-size: 1.1rem;'; }
+            if (i===0) { icon='🥇'; rankStyle='color: #F59E0B; font-weight: 800; font-size: 1.2rem;'; }
+            else if (i===1) { icon='🥈'; rankStyle='color: #64748B; font-weight: 700; font-size: 1.1rem;'; }
+            else if (i===2) { icon='🥉'; rankStyle='color: #B45309; font-weight: 700; font-size: 1.1rem;'; }
 
-            const isMe = e.name.toLowerCase() === myName.toLowerCase();
+            const isMe = e.name && myName && (e.name.toLowerCase() === myName.toLowerCase());
             const rowStyle = isMe ? 'background-color: rgba(79, 70, 229, 0.1); border-radius: 8px;' : '';
 
             tb.innerHTML += `
                     <tr style="${rowStyle}">
                         <td style="${rankStyle}">${icon} ${i+1}</td>
                         <td class="fw-bold">${e.name} ${isMe ? '(You)' : ''}</td>
-                        <td>
-                            <span class="badge" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--btn-border);">${e.score}/${e.totalQuestions}</span>
-                        </td>
+                        <td><span class="badge" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--btn-border);">${e.score}/${e.totalQuestions}</span></td>
                         <td style="font-family: 'JetBrains Mono'; font-size: 0.9rem; color: var(--text-muted);">${e.timeFormatted}</td>
                     </tr>`;
         });
