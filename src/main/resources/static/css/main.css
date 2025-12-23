@@ -50,8 +50,18 @@ body {
 .blob-2 { bottom: -200px; right: -200px; background: #EC4899; animation-delay: -10s; }
 
 @keyframes blobMove {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(50px, 50px) scale(1.1); }
+    0% {
+        transform: translate(0, 0) scale(1);
+        filter: blur(150px) hue-rotate(0deg);
+    }
+    50% {
+        /* Немного меняем оттенок в середине пути */
+        filter: blur(150px) hue-rotate(30deg);
+    }
+    100% {
+        transform: translate(50px, 50px) scale(1.1);
+        filter: blur(150px) hue-rotate(0deg);
+    }
 }
 
 /* Общие классы кнопок */

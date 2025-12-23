@@ -35,9 +35,17 @@
             <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; border-radius: 3px; background: var(--accent-gradient);"></div>
         </div>
         <div class="question-card fade-enter">
-            <h4 class="fw-bold m-0" style="line-height: 1.5;" id="questionText">Loading...</h4>
+            <h4 class="fw-bold m-0" style="line-height: 1.5;" id="questionText">
+                <span class="skeleton skeleton-text" style="width: 90%;">Loading question content</span>
+                <span class="skeleton skeleton-text" style="width: 60%;"></span>
+            </h4>
         </div>
-        <div id="optionsArea" class="option-grid"></div>
+        <div id="optionsArea" class="option-grid">
+            <div class="option-btn skeleton" style="height: 70px; border: none;"></div>
+            <div class="option-btn skeleton" style="height: 70px; border: none;"></div>
+            <div class="option-btn skeleton" style="height: 70px; border: none;"></div>
+            <div class="option-btn skeleton" style="height: 70px; border: none;"></div>
+        </div>
         <div class="text-center mt-3 text-muted small opacity-50">Press 1-5 on keyboard</div>
     </div>
 

@@ -21,10 +21,75 @@ body.dark-mode {
     color: var(--primary); font-weight: 700;
 }
 .question-card {
-    background: var(--card-bg); border: var(--card-border); border-radius: 24px;
-    padding: 2.5rem; margin-bottom: 1.5rem; text-align: center;
-    box-shadow: var(--card-shadow);
+    background: rgba(var(--card-bg-rgb), 0.7); /* Чуть прозрачнее для эффекта */
+    backdrop-filter: blur(20px) saturate(180%); /* Сильнее размытие и насыщенность */
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    /* Тонкие границы для имитации света сверху-слева */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    border-left: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+            0 8px 32px 0 rgba(31, 38, 135, 0.15),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.1); /* Внутреннее свечение */
+
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
+
+body.dark-mode .question-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skeleton {
+    background: linear-gradient(
+            90deg,
+            rgba(var(--card-bg-rgb), 0.5) 25%,
+            rgba(var(--text-muted-rgb), 0.1) 50%,
+            rgba(var(--card-bg-rgb), 0.5) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite linear;
+    border-radius: 8px;
+    color: transparent !important; /* Скрываем текст внутри, если он есть */
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Для темной темы - адаптация цвета скелетона */
+body.dark-mode .skeleton {
+    background: linear-gradient(
+            90deg,
+            rgba(255,255,255, 0.05) 25%,
+            rgba(255,255,255, 0.1) 50%,
+            rgba(255,255,255, 0.05) 75%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Утилиты размеров для скелетонов */
+.skeleton-text {
+    display: inline-block;
+    height: 1.2em;
+    width: 80%;
+    margin-bottom: 0.5rem;
+}
+.skeleton-block {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 20px;
+}
+
 /* Исправленная анимация */
 .fade-enter {
     opacity: 0;
