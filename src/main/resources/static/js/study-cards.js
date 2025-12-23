@@ -38,4 +38,63 @@ document.addEventListener('keydown', e => {
     if(e.code==='ArrowLeft') nav(-1);
 });
 
+// --- 1. SWIPE GESTURES (Для мобильных) ---
+let touchStartX = 0;
+let touchEndX = 0;
+const minSwipeDistance = 50; // Минимальная дистанция для свайпа
+
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+}, {passive: true});
+
+function handleSwipe() {
+    const distance = touchEndX - touchStartX;
+    if (Math.abs(distance) < minSwipeDistance) return;
+
+    if (distance < 0) {
+        // Свайп влево (палец движется влево) -> Следующий вопрос
+        nav(1);
+    } else {
+        // Свайп вправо -> Предыдущий вопрос
+        nav(-1);
+    }
+}
+
+// --- 2. 3D TILT EFFECT (Для десктопа) ---
+// Эффект параллакса при наведении мыши
+scene.addEventListener('mousemove', (e) => {
+    // Отключаем эффект, если устройство сенсорное (чтобы не мешать скроллу/свайпу)
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    const rect = scene.getBoundingClientRect();
+    // Координаты мыши внутри элемента
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Вычисляем центр
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Вычисляем поворот (чувствительность / 20)
+    const rotateY = ((x - centerX) / 20); // Поворот вокруг оси Y зависит от X
+    const rotateX = -((y - centerY) / 20); // Поворот вокруг оси X зависит от Y (инвертируем)
+
+    // Применяем трансформацию.
+    // transition: none нужен для мгновенного отклика при движении
+    scene.style.transition = 'none';
+    scene.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+});
+
+// Сброс при уходе мыши
+scene.addEventListener('mouseleave', () => {
+    // Возвращаем плавную анимацию для сброса
+    scene.style.transition = 'transform 0.5s ease-out';
+    scene.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+});
+
 render();
