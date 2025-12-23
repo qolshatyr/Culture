@@ -5,70 +5,7 @@
 </head>
 <body>
 
-<style>
-    /* Стили только для игры */
-    :root {
-        --card-bg: #FFFFFF;
-        --correct-bg: #D1FAE5; --correct-border: #10B981; --correct-text: #065F46;
-        --wrong-bg: #FEE2E2; --wrong-border: #EF4444; --wrong-text: #991B1B;
-    }
-    body.dark-mode {
-        --card-bg: #1E293B;
-        --correct-bg: rgba(16, 185, 129, 0.2); --correct-text: #6EE7B7;
-        --wrong-bg: rgba(239, 68, 68, 0.2); --wrong-text: #FCA5A5;
-    }
-
-    /* Верхняя панель */
-    .top-bar {
-        background: rgba(var(--card-bg-rgb), 0.8); backdrop-filter: blur(12px);
-        border-bottom: var(--card-border); padding: 1rem 1.5rem;
-        position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center;
-    }
-    .timer-badge {
-        font-family: 'JetBrains Mono', monospace; background: var(--bg-color);
-        border: 1px solid var(--btn-border); padding: 0.4rem 0.8rem; border-radius: 8px;
-        color: var(--primary); font-weight: 700;
-    }
-    /* Карточка вопроса */
-    .question-card {
-        background: var(--card-bg); border: var(--card-border); border-radius: 24px;
-        padding: 2.5rem; margin-bottom: 1.5rem; text-align: center;
-        box-shadow: var(--card-shadow);
-    }
-    .fade-enter { opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-    .fade-enter-active { opacity: 1; transform: translateY(0); }
-
-    /* Кнопки ответов */
-    .option-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-    @media (min-width: 768px) { .option-grid { grid-template-columns: 1fr 1fr; } }
-
-    .option-btn {
-        background: rgba(var(--card-bg-rgb), 0.5); border: 2px solid var(--btn-border); color: var(--text-main);
-        padding: 1.25rem; border-radius: 16px; font-weight: 600; text-align: left;
-        transition: all 0.2s; cursor: pointer; position: relative; display: flex; align-items: center;
-    }
-    .option-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .option-key {
-        background: var(--btn-border); color: var(--text-muted);
-        width: 28px; height: 28px; border-radius: 6px;
-        display: flex; align-items: center; justify-content: center; margin-right: 12px;
-        font-size: 0.85rem; font-weight: 700;
-    }
-    .key-hint {
-        position: absolute; right: 15px; font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem; color: var(--text-muted); opacity: 0.6;
-        border: 1px solid var(--btn-border); padding: 2px 6px; border-radius: 6px;
-    }
-
-    .btn-correct { background-color: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
-    .btn-wrong { background-color: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
-
-    .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-
-    .control-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
-    .control-btn:hover { color: var(--primary); transform: scale(1.1); }
-</style>
+<link rel="stylesheet" th:href="@{/css/quiz.css}">
 
 <div class="top-bar">
     <a href="/" class="text-decoration-none fw-bold" style="color: var(--text-muted)">✕ Exit</a>
@@ -94,11 +31,9 @@
                 <span id="currentNum">1</span> / <span id="totalNum">20</span>
             </span>
         </div>
-
         <div class="progress mb-4" style="height: 6px; background: var(--btn-border); border-radius: 3px;">
             <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; border-radius: 3px; background: var(--accent-gradient);"></div>
         </div>
-
         <div class="question-card fade-enter">
             <h4 class="fw-bold m-0" style="line-height: 1.5;" id="questionText">Loading...</h4>
         </div>
@@ -121,150 +56,14 @@
 <script th:replace="~{fragments/common :: scripts}"></script>
 
 <script th:inline="javascript">
-    // --- 1. НАСТРОЙКИ ---
-    let soundOn = true;
-    const sCorrect = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3');
-    const sWrong = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=wrong-answer-129254.mp3');
-    const sWin = new Audio('https://cdn.pixabay.com/download/audio/2022/10/24/audio_0df9765799.mp3?filename=winfanfare-6959.mp3');
-
-    function toggleSound() {
-        soundOn = !soundOn;
-        document.getElementById('soundBtn').innerText = soundOn ? '🔊' : '🔇';
-    }
-    function play(type) {
-        if (!soundOn) return;
-        if (type === 'c') { sCorrect.currentTime=0; sCorrect.play(); }
-        if (type === 'w') { sWrong.currentTime=0; sWrong.play(); }
-        if (type === 'f') { sWin.currentTime=0; sWin.play(); }
-    }
-
-    // ТЕМА (удалена отсюда, так как теперь берется из fragments/common)
-
-    // ... Остальной код JS (render, check, submitScore) оставляем как есть ...
-    // Вставь сюда тот же JS код, что мы делали в предыдущих шагах
-    let questions = [];
-    try {
-        const rawJson = [[${questionsJson}]];
-        questions = JSON.parse(rawJson);
-    } catch (e) { console.error("Error parsing JSON", e); }
-
-    let idx = 0, score = 0, locked = false, seconds = 0, timerInt;
-    let streak = 0;
-    const submitUrl = [[@{/api/submit-score}]];
-    const categoryId = [[${categoryId}]];
-
-    if (questions && questions.length > 0) {
-        document.getElementById('totalNum').innerText = questions.length;
-        timerInt = setInterval(() => {
-            seconds++;
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('timerDisplay').innerText = `${m}:${s}`;
-        }, 1000);
-        render();
-    } else {
-        document.getElementById('questionText').innerText = "No questions found!";
-    }
-
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    document.addEventListener('keydown', e => {
-        if (!locked && ['1','2','3','4','5'].includes(e.key)) {
-            const btns = document.querySelectorAll('.option-btn');
-            if (btns[e.key-1]) btns[e.key-1].click();
-        }
-    });
-
-    function render() {
-        if (idx >= questions.length) return finish();
-        const qCard = document.querySelector('.question-card');
-        const opts = document.getElementById('optionsArea');
-        qCard.classList.remove('fade-enter-active');
-        qCard.classList.add('fade-enter');
-        opts.style.opacity = '0';
-        setTimeout(() => {
-            const q = questions[idx];
-            locked = false;
-            document.getElementById('currentNum').innerText = idx + 1;
-            document.getElementById('questionText').innerText = q.questionText;
-            document.getElementById('progressBar').style.width = ((idx) / questions.length) * 100 + '%';
-            opts.innerHTML = '';
-            let variants = [
-                {k:'A',t:q.optionA}, {k:'B',t:q.optionB}, {k:'C',t:q.optionC}, {k:'D',t:q.optionD}, {k:'E',t:q.optionE}
-            ].filter(v => v.t && v.t.trim());
-            shuffle(variants);
-            const labels = ['A','B','C','D','E'];
-            variants.forEach((v, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'option-btn';
-                btn.innerHTML = `
-                        <div class="option-key">${labels[i]}</div>
-                        <span class="flex-grow-1">${v.t}</span>
-                        <span class="key-hint">Key ${i+1}</span>
-                    `;
-                btn.onclick = () => check(btn, v.k, q.correctAnswer);
-                btn.dataset.k = v.k;
-                opts.appendChild(btn);
-            });
-            requestAnimationFrame(() => {
-                qCard.classList.add('fade-enter-active');
-                opts.style.opacity = '1';
-            });
-        }, 50);
-    }
-
-    function check(btn, k, corr) {
-        if (locked) return;
-        locked = true;
-        const cleanK = k ? k.trim().toUpperCase() : "";
-        const cleanCorr = corr ? corr.trim().toUpperCase() : "";
-        if (cleanK === cleanCorr) {
-            btn.classList.add('btn-correct');
-            score++; streak++;
-            if (streak > 1) { document.getElementById('streakBox').style.display = 'flex'; document.getElementById('streakVal').innerText = "x" + streak; }
-            play('c');
-        } else {
-            btn.classList.add('btn-wrong');
-            document.querySelector('.question-card').classList.add('shake');
-            document.querySelectorAll('.option-btn').forEach(b => {
-                if (b.dataset.k === cleanCorr) b.classList.add('btn-correct');
-            });
-            streak = 0; document.getElementById('streakBox').style.display = 'none';
-            play('w');
-        }
-        document.getElementById('scoreVal').innerText = score;
-        setTimeout(() => { idx++; render(); }, 1200);
-    }
-
-    function finish() {
-        clearInterval(timerInt);
-        document.getElementById('gameArea').style.display = 'none';
-        document.getElementById('inputNameArea').style.display = 'block';
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('finalScore').innerText = score + " / " + questions.length;
-        if ((score / questions.length) >= 0.5) { play('f'); confetti({particleCount:150, spread:70, origin:{y:0.6}}); }
-    }
-
-    function submitScore() {
-        const name = document.getElementById('username').value.trim() || "Anon";
-        const btn = document.getElementById('saveBtn');
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-        fetch(submitUrl, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                name: name, score: score, totalQuestions: questions.length,
-                timeFormatted: document.getElementById('timerDisplay').innerText,
-                timeSeconds: seconds, category: categoryId
-            })
-        }).then(r => r.json()).then(() => window.location.href = "/leaderboard").catch(() => { btn.disabled=false; alert("Error"); });
-    }
+    const QuizConfig = {
+        questionsJson: [[${questionsJson}]],
+        submitUrl: [[@{/api/submit-score}]],
+    categoryId: [[${categoryId}]]
+    };
 </script>
+
+<script th:src="@{/js/quiz-game.js}"></script>
+
 </body>
 </html>

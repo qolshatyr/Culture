@@ -1,0 +1,83 @@
+/* Стили для главной страницы */
+
+/* Кнопка темы в углу */
+.theme-toggle-fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Карточки разделов */
+.topic-card {
+    background: rgba(var(--card-bg-rgb), 0.7);
+    backdrop-filter: blur(12px);
+    border: var(--card-border);
+    border-radius: 24px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-main);
+}
+.topic-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+}
+
+.icon-box {
+    width: 80px;
+    height: 80px;
+    background: rgba(var(--card-bg-rgb), 0.5);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--card-border);
+    transition: 0.3s;
+}
+.topic-card:hover .icon-box {
+    background: var(--accent-gradient);
+    color: white;
+    transform: rotate(10deg);
+    border-color: transparent;
+}
+
+/* Анимированный заголовок */
+.gradient-text {
+    background: var(--accent-gradient);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientFlow 3s linear infinite;
+}
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Кнопки */
+.btn-primary-modern {
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+.btn-primary-modern:hover {
+    background: var(--primary-hover);
+    color: white;
+}

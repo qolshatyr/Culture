@@ -5,81 +5,10 @@
 </head>
 <body>
 
+<link rel="stylesheet" th:href="@{/css/study.css}">
 <div th:replace="~{fragments/common :: blobs}"></div>
 
-<style>
-    /* Специфичные стили для режима обучения */
-    :root {
-        --card-back-bg: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
-    }
-    body.dark-mode {
-        --card-back-bg: linear-gradient(135deg, #312E81 0%, #1E1B4B 100%);
-    }
-
-    /* Выравнивание по центру, специфичное для этой страницы */
-    body {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        overflow: hidden;
-    }
-
-    .top-nav { position: absolute; top: 20px; left: 20px; z-index: 10; }
-
-    /* 3D Сцена */
-    .scene { width: 90%; max-width: 650px; height: 420px; perspective: 1000px; cursor: pointer; margin-top: -40px; }
-    .card-inner {
-        width: 100%; height: 100%; position: relative;
-        transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-        transform-style: preserve-3d;
-    }
-    .scene.flipped .card-inner { transform: rotateY(180deg); }
-
-    .card-face {
-        position: absolute; width: 100%; height: 100%;
-        backface-visibility: hidden;
-        border-radius: 32px;
-        padding: 40px;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        text-align: center;
-        box-shadow: var(--card-shadow);
-        border: var(--card-border);
-    }
-
-    .card-face.front {
-        background: rgba(var(--card-bg-rgb), 0.8);
-        backdrop-filter: blur(12px);
-    }
-    .card-face.back {
-        background: var(--card-back-bg);
-        color: white;
-        transform: rotateY(180deg);
-        border: none;
-    }
-
-    /* Кнопки управления */
-    .controls { display: flex; gap: 20px; margin-top: 40px; z-index: 10; }
-    .btn-ctrl {
-        background: rgba(var(--card-bg-rgb), 0.8);
-        backdrop-filter: blur(5px);
-        color: var(--text-main);
-        border: var(--card-border);
-        padding: 15px 35px; border-radius: 16px;
-        font-weight: 700; font-size: 1.1rem;
-        cursor: pointer; transition: 0.2s;
-        display: flex; align-items: center; gap: 10px;
-    }
-    .btn-ctrl:hover { transform: translateY(-3px); border-color: var(--primary); color: var(--primary); }
-
-    .badge-topic {
-        background: var(--accent-gradient);
-        color: white;
-        padding: 6px 12px; border-radius: 8px;
-        font-weight: 700; font-size: 0.8rem; text-transform: uppercase;
-        margin-bottom: 20px; letter-spacing: 0.05em;
-    }
-</style>
-
 <div class="top-nav"><a href="/" class="btn-modern">← Menu</a></div>
-
 <button class="btn-modern" onclick="toggleTheme()" id="themeBtn"
         style="position: absolute; top: 20px; right: 20px; z-index: 10; width: 45px; height: 45px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
     🌙
@@ -112,45 +41,11 @@
 <script th:replace="~{fragments/common :: scripts}"></script>
 
 <script th:inline="javascript">
-    const qs = [[${questions}]]; let i = 0;
-    const scene = document.querySelector('.scene');
-
-    function render() {
-        if (!qs || qs.length === 0) return;
-        const q = qs[i];
-
-        // Фронтальная сторона
-        document.getElementById('qText').innerText = q.questionText;
-        document.getElementById('topic').innerText = q.topic || 'General';
-
-        // Задняя сторона
-        document.getElementById('ansKey').innerText = q.correctAnswer;
-        let txt = "";
-        if(q.correctAnswer==='A') txt=q.optionA;
-        if(q.correctAnswer==='B') txt=q.optionB;
-        if(q.correctAnswer==='C') txt=q.optionC;
-        if(q.correctAnswer==='D') txt=q.optionD;
-        if(q.correctAnswer==='E') txt=q.optionE;
-        document.getElementById('ansText').innerText = txt;
-
-        // Счетчики
-        document.getElementById('idx').innerText = i+1;
-        document.getElementById('total').innerText = qs.length;
-
-        // Сброс переворота при смене вопроса
-        scene.classList.remove('flipped');
-    }
-
-    function flip() { scene.classList.toggle('flipped'); }
-    function nav(d) { i+=d; if(i<0)i=qs.length-1; if(i>=qs.length)i=0; render(); }
-
-    document.addEventListener('keydown', e => {
-        if(e.code==='Space') flip();
-        if(e.code==='ArrowRight') nav(1);
-        if(e.code==='ArrowLeft') nav(-1);
-    });
-
-    render();
+    const StudyConfig = {
+        questions: [[${questions}]]
+    };
 </script>
+
+<script th:src="@{/js/study-cards.js}"></script>
 </body>
 </html>

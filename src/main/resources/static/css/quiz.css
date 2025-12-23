@@ -1,0 +1,58 @@
+/* Стили только для игры */
+:root {
+    --card-bg: #FFFFFF;
+    --correct-bg: #D1FAE5; --correct-border: #10B981; --correct-text: #065F46;
+    --wrong-bg: #FEE2E2; --wrong-border: #EF4444; --wrong-text: #991B1B;
+}
+body.dark-mode {
+    --card-bg: #1E293B;
+    --correct-bg: rgba(16, 185, 129, 0.2); --correct-text: #6EE7B7;
+    --wrong-bg: rgba(239, 68, 68, 0.2); --wrong-text: #FCA5A5;
+}
+
+.top-bar {
+    background: rgba(var(--card-bg-rgb), 0.8); backdrop-filter: blur(12px);
+    border-bottom: var(--card-border); padding: 1rem 1.5rem;
+    position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center;
+}
+.timer-badge {
+    font-family: 'JetBrains Mono', monospace; background: var(--bg-color);
+    border: 1px solid var(--btn-border); padding: 0.4rem 0.8rem; border-radius: 8px;
+    color: var(--primary); font-weight: 700;
+}
+.question-card {
+    background: var(--card-bg); border: var(--card-border); border-radius: 24px;
+    padding: 2.5rem; margin-bottom: 1.5rem; text-align: center;
+    box-shadow: var(--card-shadow);
+}
+.fade-enter { opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+.fade-enter-active { opacity: 1; transform: translateY(0); }
+
+.option-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 768px) { .option-grid { grid-template-columns: 1fr 1fr; } }
+
+.option-btn {
+    background: rgba(var(--card-bg-rgb), 0.5); border: 2px solid var(--btn-border); color: var(--text-main);
+    padding: 1.25rem; border-radius: 16px; font-weight: 600; text-align: left;
+    transition: all 0.2s; cursor: pointer; position: relative; display: flex; align-items: center;
+}
+.option-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+.option-key {
+    background: var(--btn-border); color: var(--text-muted);
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; margin-right: 12px;
+    font-size: 0.85rem; font-weight: 700;
+}
+.key-hint {
+    position: absolute; right: 15px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--text-muted); opacity: 0.6;
+    border: 1px solid var(--btn-border); padding: 2px 6px; border-radius: 6px;
+}
+
+.btn-correct { background-color: var(--correct-bg) !important; border-color: var(--correct-border) !important; color: var(--correct-text) !important; }
+.btn-wrong { background-color: var(--wrong-bg) !important; border-color: var(--wrong-border) !important; color: var(--wrong-text) !important; }
+.shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+.control-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+.control-btn:hover { color: var(--primary); transform: scale(1.1); }
