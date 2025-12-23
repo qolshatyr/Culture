@@ -194,7 +194,6 @@ function submitScore() {
     btn.disabled = true;
     btn.innerText = "Saving...";
 
-    // Используем URL из конфига
     fetch(QuizConfig.submitUrl, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -202,7 +201,13 @@ function submitScore() {
             name: name, score: score, totalQuestions: questions.length,
             timeFormatted: document.getElementById('timerDisplay').innerText,
             timeSeconds: seconds,
-            category: QuizConfig.categoryId // Используем категорию из конфига
+            category: QuizConfig.categoryId
         })
-    }).then(r => r.json()).then(() => window.location.href = "/leaderboard").catch(() => { btn.disabled=false; alert("Error"); });
+    })
+        .then(r => r.json())
+        .then(() => {
+            // ДОБАВИЛИ: передаем имя в URL для подсветки
+            window.location.href = "/leaderboard?highlight=" + encodeURIComponent(name);
+        })
+        .catch(() => { btn.disabled=false; alert("Error"); });
 }

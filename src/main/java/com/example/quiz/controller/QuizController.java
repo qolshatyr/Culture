@@ -36,14 +36,19 @@ public class QuizController {
     }
 
     @GetMapping("/leaderboard")
-    public String showLeaderboard(Model model) {
+    public String showLeaderboard(@RequestParam(value = "highlight", required = false) String highlightName, Model model) {
         List<String> categories = new ArrayList<>();
         repository.findDistinctGroups().forEach(g -> categories.add(String.valueOf(g)));
         categories.add("ALL");
 
         model.addAttribute("categories", categories);
-        // Берем данные из сервиса
         model.addAttribute("leaderboards", leaderboardService.getAllLeaderboards());
+
+        // Передаем имя для подсветки, если оно есть
+        if (highlightName != null && !highlightName.isEmpty()) {
+            model.addAttribute("highlight", highlightName);
+        }
+
         return "leaderboard";
     }
 

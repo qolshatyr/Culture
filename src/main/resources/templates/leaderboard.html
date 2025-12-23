@@ -30,30 +30,64 @@
         <div class="tab-content" id="pills-tabContent">
             <div th:each="cat : ${categories}" class="tab-pane fade"
                  th:classappend="${cat == 'ALL'} ? 'show active' : ''"
-                 th:id="'pills-' + ${cat}" role="tabpanel">
+                 th:id="'pills-' + ${cat}" role="tabpanel"
+                 th:with="list=${leaderboards.get(cat)}">
 
-                <div th:if="${leaderboards.get(cat) == null || leaderboards.get(cat).isEmpty()}" class="text-center py-5">
+                <div th:if="${list == null || list.isEmpty()}" class="text-center py-5">
                     <div style="font-size: 3rem; opacity: 0.5;">🚀</div>
                     <h4 class="mt-3">No Records Yet</h4>
                     <p style="color: var(--text-muted)">Be the first!</p>
                 </div>
 
-                <table th:unless="${leaderboards.get(cat) == null || leaderboards.get(cat).isEmpty()}">
-                    <thead><tr><th width="15%">Rank</th><th width="45%">Player</th><th width="20%">Score</th><th width="20%">Time</th></tr></thead>
-                    <tbody>
-                    <tr th:each="score, stat : ${leaderboards.get(cat)}">
-                        <td>
-                            <span th:if="${stat.count == 1}" class="fw-bold rank-gold">🥇 1</span>
-                            <span th:if="${stat.count == 2}" class="fw-bold rank-silver">🥈 2</span>
-                            <span th:if="${stat.count == 3}" class="fw-bold rank-bronze">🥉 3</span>
-                            <span th:if="${stat.count > 3}" style="color: var(--text-muted); padding-left: 24px;" th:text="${stat.count}"></span>
-                        </td>
-                        <td class="fw-bold" th:text="${score.name}">User</td>
-                        <td><span class="score-badge" th:text="${score.score}">0</span></td>
-                        <td style="font-family: 'JetBrains Mono'; color: var(--text-muted);" th:text="${score.timeFormatted}">00:00</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div th:unless="${list == null || list.isEmpty()}">
+
+                    <div class="podium-container" th:if="${list.size() > 0}">
+                        <div class="podium-item rank-2" th:if="${list.size() >= 2}">
+                            <img th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${list[1].name}" class="avatar-podium">
+                            <div class="podium-base">2</div>
+                            <div class="podium-name" th:text="${list[1].name}">User</div>
+                            <div class="podium-score" th:text="${list[1].score} + ' pts'"></div>
+                        </div>
+
+                        <div class="podium-item rank-1">
+                            <img th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${list[0].name}" class="avatar-podium">
+                            <div class="podium-base">1</div>
+                            <div class="podium-name" th:text="${list[0].name}">User</div>
+                            <div class="podium-score" th:text="${list[0].score} + ' pts'"></div>
+                        </div>
+
+                        <div class="podium-item rank-3" th:if="${list.size() >= 3}">
+                            <img th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${list[2].name}" class="avatar-podium">
+                            <div class="podium-base">3</div>
+                            <div class="podium-name" th:text="${list[2].name}">User</div>
+                            <div class="podium-score" th:text="${list[2].score} + ' pts'"></div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead><tr><th width="15%">Rank</th><th width="45%">Player</th><th width="20%">Score</th><th width="20%">Time</th></tr></thead>
+                        <tbody>
+                        <tr th:each="score, stat : ${list}"
+                            th:classappend="${highlight != null and score.name == highlight} ? 'highlight-row' : ''">
+                            <td>
+                                <span th:if="${stat.count == 1}" class="fw-bold rank-gold">🥇 1</span>
+                                <span th:if="${stat.count == 2}" class="fw-bold rank-silver">🥈 2</span>
+                                <span th:if="${stat.count == 3}" class="fw-bold rank-bronze">🥉 3</span>
+                                <span th:if="${stat.count > 3}" style="color: var(--text-muted); padding-left: 24px;" th:text="${stat.count}"></span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${score.name}" class="avatar-img">
+                                    <span class="fw-bold" th:text="${score.name}">User</span>
+                                </div>
+                            </td>
+                            <td><span class="score-badge" th:text="${score.score}">0</span></td>
+                            <td style="font-family: 'JetBrains Mono'; color: var(--text-muted);" th:text="${score.timeFormatted}">00:00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
     </div>
