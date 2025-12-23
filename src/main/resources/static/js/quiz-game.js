@@ -1,19 +1,39 @@
-let soundOn = true;
+// --- НАСТРОЙКА ЗВУКА ---
+// 1. Загружаем настройку из памяти (по умолчанию включено, если записи нет)
+let soundOn = localStorage.getItem('quiz_sound') !== 'off';
+
 const sCorrect = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3');
 const sWrong = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=wrong-answer-129254.mp3');
 const sWin = new Audio('https://cdn.pixabay.com/download/audio/2022/10/24/audio_0df9765799.mp3?filename=winfanfare-6959.mp3');
 
+// 2. Устанавливаем громкость на 60%
+sCorrect.volume = 0.6;
+sWrong.volume = 0.6;
+sWin.volume = 0.6;
+
+// Обновляем иконку при загрузке страницы в соответствии с сохраненной настройкой
+const btn = document.getElementById('soundBtn');
+if (btn) {
+    btn.innerText = soundOn ? '🔊' : '🔇';
+}
+
 function toggleSound() {
     soundOn = !soundOn;
+    // Обновляем иконку
     document.getElementById('soundBtn').innerText = soundOn ? '🔊' : '🔇';
+    // 3. Сохраняем выбор в память браузера
+    localStorage.setItem('quiz_sound', soundOn ? 'on' : 'off');
 }
+
 function play(type) {
     if (!soundOn) return;
+    // Сбрасываем время, чтобы звук можно было проиграть повторно быстро
     if (type === 'c') { sCorrect.currentTime=0; sCorrect.play(); }
     if (type === 'w') { sWrong.currentTime=0; sWrong.play(); }
     if (type === 'f') { sWin.currentTime=0; sWin.play(); }
 }
 
+// --- ЛОГИКА ИГРЫ ---
 let questions = [];
 try {
     // Используем QuizConfig, который определен в HTML
@@ -57,14 +77,12 @@ function render() {
     const qCard = document.querySelector('.question-card');
     const opts = document.getElementById('optionsArea');
 
-    // --- 1. СБРОС АНИМАЦИИ (Мгновенное скрытие) ---
+    // --- СБРОС АНИМАЦИИ ---
     qCard.classList.remove('fade-enter-active');
     qCard.classList.add('fade-enter');
     opts.style.opacity = '0';
 
-    // --- 2. FORCE REFLOW (Магия) ---
-    // Чтение свойства offsetWidth заставляет браузер немедленно применить
-    // классы выше (скрыть элемент), не дожидаясь конца скрипта.
+    // FORCE REFLOW
     void qCard.offsetWidth;
 
     setTimeout(() => {
@@ -100,7 +118,7 @@ function render() {
             opts.appendChild(btn);
         });
 
-        // --- 3. ЗАПУСК ПЛАВНОГО ПОЯВЛЕНИЯ ---
+        // --- ЗАПУСК ПЛАВНОГО ПОЯВЛЕНИЯ ---
         requestAnimationFrame(() => {
             qCard.classList.add('fade-enter-active');
             opts.style.opacity = '1';
@@ -128,13 +146,10 @@ function check(btn, k, corr) {
         btn.classList.add('btn-wrong');
 
         const qCard = document.querySelector('.question-card');
-        // 1. Сброс анимации (на всякий случай)
         qCard.classList.remove('shake');
         void qCard.offsetWidth; // Force Reflow
-        // 2. Запуск анимации
         qCard.classList.add('shake');
 
-        // 3. Удаление класса после завершения (чтобы сработало в следующий раз)
         setTimeout(() => {
             qCard.classList.remove('shake');
         }, 500);
@@ -166,25 +181,22 @@ function finish() {
     // 3. Логика звезд (с анимацией)
     const stars = document.querySelectorAll('#starRating span');
 
-    // Звезда 1: Если > 0%
     if (percentage > 0) {
         setTimeout(() => stars[0].classList.add('active'), 250);
     }
-    // Звезда 2: Если >= 50%
     if (percentage >= 50) {
         setTimeout(() => stars[1].classList.add('active'), 650);
     }
-    // Звезда 3: Если >= 80%
     if (percentage >= 80) {
         setTimeout(() => stars[2].classList.add('active'), 1050);
     }
 
-    // Победный звук и конфетти (только если набрал 50%+)
+    // Победный звук (если набрал 50%+)
     if (percentage >= 50) {
         setTimeout(() => {
             play('f');
             confetti({particleCount:150, spread:70, origin:{y:0.6}});
-        }, 650); // Синхронизируем со второй звездой
+        }, 650);
     }
 }
 
@@ -206,7 +218,6 @@ function submitScore() {
     })
         .then(r => r.json())
         .then(() => {
-            // ДОБАВИЛИ: передаем имя в URL для подсветки
             window.location.href = "/leaderboard?highlight=" + encodeURIComponent(name);
         })
         .catch(() => { btn.disabled=false; alert("Error"); });
