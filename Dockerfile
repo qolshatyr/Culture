@@ -1,28 +1,24 @@
 # Этап 1: Сборка (Build)
-# Используем образ с Maven и Java 17
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
-# Копируем файл зависимостей и скачиваем их (для кэширования)
+# Копируем зависимости
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
 # Копируем исходный код и собираем приложение
 COPY src ./src
-# Собираем JAR, пропуская тесты для скорости
+# Проверяем имя файла в pom.xml: <artifactId>Culture</artifactId> <version>0.0.1-SNAPSHOT</version>
 RUN mvn clean package -DskipTests
 
 # Этап 2: Запуск (Run)
-# Используем легкий образ Java 17 для запуска
-FROM openjdk:17-jdk-slim
+# ИСПРАВЛЕНИЕ: Используем eclipse-temurin вместо openjdk
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Копируем собранный JAR файл из этапа сборки
-# Имя файла берется из pom.xml: <artifactId>Culture</artifactId> + <version>0.0.1-SNAPSHOT</version>
+# Копируем JAR файл. Важно: имя файла должно совпадать с тем, что в pom.xml
 COPY --from=build /app/target/Culture-0.0.1-SNAPSHOT.jar app.jar
 
-# Открываем порт 8080
 EXPOSE 8080
 
-# Команда запуска
 ENTRYPOINT ["java", "-jar", "app.jar"]
