@@ -11,9 +11,16 @@
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4" style="position: relative; z-index: 2;">
-        <a href="/" class="btn-modern">← Menu</a>
-        <h2 class="fw-bold m-0" style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hall of Fame</h2>
-        <button class="btn-modern theme-toggle-header" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        <a href="/" class="btn-modern header-btn">
+            <span style="font-size: 1.2rem; line-height: 1;">←</span>
+            <span class="d-none d-sm-inline ms-2">Menu</span> </a>
+
+        <h2 class="fw-bold m-0 text-center fs-4 fs-sm-2"
+            style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Hall of Fame
+        </h2>
+
+        <button class="btn-modern theme-toggle-header header-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
     </div>
 
     <div class="leader-card">

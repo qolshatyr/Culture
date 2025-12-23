@@ -61,3 +61,28 @@ body {
     padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;
     margin-bottom: 20px; letter-spacing: 0.05em;
 }
+
+@media (max-width: 768px) {
+    .scene {
+        height: 350px; /* Чуть ниже для мобилок */
+        margin-top: 0;
+    }
+
+    /* Шрифт ответов поменьше */
+    #ansKey {
+        font-size: 2rem !important;
+    }
+
+    /* Кнопки навигации снизу - делаем большими и удобными */
+    .controls {
+        width: 100%;
+        justify-content: space-between;
+        padding: 0 20px;
+    }
+
+    .btn-ctrl {
+        padding: 12px 20px;
+        flex: 1; /* Кнопки растянутся */
+        justify-content: center;
+    }
+}

@@ -157,3 +157,78 @@ td {
 .podium-score {
     font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono';
 }
+
+/* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
+@media (max-width: 576px) {
+    .container {
+        padding-top: 20px;
+    }
+
+    .leader-card {
+        padding: 15px; /* Уменьшаем отступы внутри карточки */
+        border-radius: 16px;
+    }
+
+    /* Уменьшаем пьедестал, чтобы он влезал в экран */
+    .podium-container {
+        gap: 0.5rem;
+        transform: scale(0.9); /* Чуть уменьшаем масштаб */
+        margin-bottom: 2rem;
+    }
+
+    .podium-item {
+        width: 80px; /* Сужаем колонны */
+    }
+
+    .podium-base {
+        font-size: 1.2rem !important; /* Цифры мест поменьше */
+    }
+
+    /* Аватарки на пьедестале */
+    .avatar-podium {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    .rank-1 .avatar-podium {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    /* ТАБЛИЦА: Делаем шрифт меньше и позволяем скроллить горизонтально */
+    table {
+        display: block;
+        overflow-x: auto; /* Горизонтальный скролл если не влезает */
+        white-space: nowrap; /* Запрещаем перенос строк имен */
+    }
+
+    th, td {
+        padding: 12px 8px; /* Компактные ячейки */
+        font-size: 0.85rem;
+    }
+
+    /* Вкладки (Tabs) */
+    .nav-pills .nav-link {
+        font-size: 0.85rem;
+        padding: 0.4rem 1rem;
+    }
+}
+
+/* --- МОБИЛЬНАЯ АДАПТАЦИЯ ШАПКИ --- */
+@media (max-width: 576px) {
+    /* Делаем обе кнопки (Меню и Тема) одинаковыми квадратами */
+    .header-btn, .theme-toggle-header {
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important; /* Убираем отступы */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px; /* Чуть менее круглые, более стильные */
+    }
+
+    /* Чуть двигаем заголовок, чтобы он был ровно по центру между кнопками */
+    h2 {
+        font-size: 1.4rem !important; /* Уменьшаем шрифт заголовка */
+        white-space: nowrap; /* Чтобы не переносился */
+    }
+}
